@@ -11,6 +11,10 @@ import javax.ejb.LocalBean;
 import com.pauware.pauware_engine._Core.*;
 import com.pauware.pauware_engine._Exception.*;
 import com.pauware.pauware_engine._Java_EE.*;
+import fb.beans.entity.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -142,6 +146,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     protected AbstractStatechart _Completion_of_objectives;
     protected AbstractStatechart _End_of_crisis;
     protected AbstractStatechart_monitor _bCMS_state_machine;
+
+    protected BcmsSession _session;
 
     @javax.persistence.PersistenceContext(name = "CrisisPU")
     private javax.persistence.EntityManager _entity_manager;
@@ -382,7 +388,14 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
              * End of fake arguments
              */
             _bCMS_state_machine.fires(_Close, _Completion_of_objectives, _End_of_crisis);
+
+            // Creation de la session dans la BD
+            _session = new BcmsSession();
+            _entity_manager.persist(_session);
+
             _bCMS_state_machine.start();
+            state_police_vehicle_number(5);
+            state_fire_truck_number(4);
             System.out.println("BCMS Started.");
         } catch (Statechart_exception ex) {
             Logger.getLogger(BCMS.class.getName()).log(Level.SEVERE, null, ex);
@@ -418,6 +431,10 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
@@ -425,6 +442,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_State_fire_truck_number, _Crisis_details_exchange, _Number_of_fire_truck_defined, true, this, "set_number_of_fire_truck_required", new Object[]{number_of_fire_truck_required});
         _bCMS_state_machine.fires(_State_fire_truck_number, _Number_of_police_vehicle_defined, _Route_plan_development, true, this, "set_number_of_fire_truck_required", new Object[]{number_of_fire_truck_required});
         _bCMS_state_machine.run_to_completion(_State_fire_truck_number);
+        
+        _session.setFireTruckNumber(number_of_fire_truck_required);
+        _entity_manager.merge(_session);
     }
 
     @Override
@@ -493,6 +513,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_State_police_vehicle_number, _Crisis_details_exchange, _Number_of_police_vehicle_defined, true, this, "set_number_of_police_vehicle_required", new Object[]{number_of_police_vehicle_required});
         _bCMS_state_machine.fires(_State_police_vehicle_number, _Number_of_fire_truck_defined, _Route_plan_development, true, this, "set_number_of_police_vehicle_required", new Object[]{number_of_police_vehicle_required});
         _bCMS_state_machine.run_to_completion(_State_police_vehicle_number);
+        
+        _session.setPoliceTruckNumber(number_of_police_vehicle_required);
+        _entity_manager.merge(_session);
     }
 
     @Override

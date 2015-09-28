@@ -6,7 +6,11 @@
 package fb.beans.entity;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -33,6 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "BcmsSession.findByFireTruckNumber", query = "SELECT b FROM BcmsSession b WHERE b.fireTruckNumber = :fireTruckNumber"),
     @NamedQuery(name = "BcmsSession.findByPoliceTruckNumber", query = "SELECT b FROM BcmsSession b WHERE b.policeTruckNumber = :policeTruckNumber")})
 public class BcmsSession implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -52,6 +58,19 @@ public class BcmsSession implements Serializable {
     private Collection<Event> eventCollection;
 
     public BcmsSession() {
+    }
+
+    /**
+     * Before persist, we create a PK based on the class name and the current
+     * datetime
+     */
+    @PrePersist
+    public void onCreate() {
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date today = Calendar.getInstance().getTime();
+        String date = df.format(today);
+
+        this.setSessionId(this.getClass().getSimpleName() + date);
     }
 
     public BcmsSession(String sessionId) {
@@ -133,5 +152,5 @@ public class BcmsSession implements Serializable {
     public String toString() {
         return "fb.beans.entity.BcmsSession[ sessionId=" + sessionId + " ]";
     }
-    
+
 }

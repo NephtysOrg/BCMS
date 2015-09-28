@@ -6,6 +6,10 @@
 package fb.beans.entity;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -31,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Event.findByEventName", query = "SELECT e FROM Event e WHERE e.eventName = :eventName"),
     @NamedQuery(name = "Event.findByExecutionTrace", query = "SELECT e FROM Event e WHERE e.executionTrace = :executionTrace")})
 public class Event implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -50,6 +56,18 @@ public class Event implements Serializable {
 
     public Event(String eventName) {
         this.eventName = eventName;
+    }
+
+    /**
+     * Before persist, we create a PK based on the class name and the current datetime
+     */
+    @PrePersist
+    public void onCreate() {
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date today = Calendar.getInstance().getTime();
+        String date = df.format(today);
+
+        this.setEventName(this.getClass().getSimpleName() + date);
     }
 
     public String getEventName() {
@@ -100,5 +118,5 @@ public class Event implements Serializable {
     public String toString() {
         return "fb.beans.entity.Event[ eventName=" + eventName + " ]";
     }
-    
+
 }
