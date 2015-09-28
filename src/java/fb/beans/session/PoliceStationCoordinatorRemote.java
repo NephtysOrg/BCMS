@@ -34,4 +34,8 @@ public interface PoliceStationCoordinatorRemote {
     public void police_vehicle_breakdown(String police_vehicle,/* may be 'null' */ String replacement_police_vehicle) throws Statechart_exception;
 
     public void police_vehicle_blocked(String police_vehicle) throws Statechart_exception;
+
+    public void crisis_is_more_severe() throws Statechart_exception;
+
+    public void crisis_is_less_severe() throws Statechart_exception;
 }

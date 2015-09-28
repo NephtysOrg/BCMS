@@ -411,6 +411,10 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.to_state(_Init.name());
     }
 
+    public void close() throws Statechart_exception {
+        _bCMS_state_machine.run_to_completion(_Close);
+    }
+
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
@@ -569,4 +573,184 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_Police_vehicle_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "police_vehicles_dispatched_remove", new Object[]{police_vehicle});
         _bCMS_state_machine.run_to_completion(_Police_vehicle_blocked);
     }
+
+    @Override
+    public void crisis_is_more_severe() throws Statechart_exception {
+        _bCMS_state_machine.run_to_completion(_Crisis_is_more_severe);
+    }
+
+    @Override
+    public void crisis_is_less_severe() throws Statechart_exception {
+        _bCMS_state_machine.run_to_completion(_Crisis_is_less_severe);
+    }
+
+    /**
+     * SCXML conditions
+     */
+    public boolean in_Route_for_fire_trucks_approved() throws Statechart_exception {
+        return _bCMS_state_machine.in_state(_Route_for_fire_trucks_approved.name());
+    }
+
+    public boolean not_in_Route_for_fire_trucks_approved() throws Statechart_exception {
+        return !_bCMS_state_machine.in_state(_Route_for_fire_trucks_approved.name());
+    }
+
+    public boolean in_Route_for_police_vehicles_approved() throws Statechart_exception {
+        return _bCMS_state_machine.in_state(_Route_for_police_vehicles_approved.name());
+    }
+
+    public boolean not_in_Route_for_police_vehicles_approved() throws Statechart_exception {
+        return !_bCMS_state_machine.in_state(_Route_for_police_vehicles_approved.name());
+    }
+
+    public boolean fire_truck_dispatched_less_than_number_of_fire_truck_required() {
+        return _fire_trucks_dispatched.size() < _number_of_fire_truck_required;
+    }
+
+    public boolean fire_truck_dispatched_greater_than_or_equal_to_number_of_fire_truck_required() {
+        return _fire_trucks_dispatched.size() >= _number_of_fire_truck_required;
+    }
+
+    public boolean police_vehicle_dispatched_less_than_number_of_police_vehicle_required() {
+        return _police_vehicles_dispatched.size() < _number_of_police_vehicle_required;
+    }
+
+    public boolean police_vehicle_dispatched_greater_than_or_equal_to_number_of_police_vehicle_required() {
+        return _police_vehicles_dispatched.size() >= _number_of_police_vehicle_required;
+    }
+
+    public boolean fire_truck_arrived_less_than_fire_truck_dispatched() {
+        return _fire_trucks_arrived.size() < _fire_trucks_dispatched.size();
+    }
+
+    public boolean fire_truck_arrived_greater_than_or_equal_to_fire_truck_dispatched_and_in_All_police_vehicles_arrived() {
+        return _fire_trucks_arrived.size() >= _fire_trucks_dispatched.size() && _All_police_vehicles_arrived.active();
+    }
+
+    public boolean fire_truck_arrived_greater_than_or_equal_to_fire_truck_dispatched_and_not_in_All_police_vehicles_arrived() {
+        return _fire_trucks_arrived.size() >= _fire_trucks_dispatched.size() && !_All_police_vehicles_arrived.active();
+    }
+
+    public boolean police_vehicle_arrived_less_than_police_vehicle_dispatched() {
+        return _police_vehicles_arrived.size() < _police_vehicles_dispatched.size();
+    }
+
+    public boolean police_vehicle_arrived_greater_than_or_equal_to_police_vehicle_dispatched_and_in_All_fire_trucks_arrived() {
+        return _police_vehicles_arrived.size() >= _police_vehicles_dispatched.size() && _All_fire_trucks_arrived.active();
+    }
+
+    public boolean police_vehicle_arrived_greater_than_or_equal_to_police_vehicle_dispatched_and_not_in_All_fire_trucks_arrived() {
+        return _police_vehicles_arrived.size() >= _police_vehicles_dispatched.size() && !_All_fire_trucks_arrived.active();
+    }
+
+    /**
+     * SCXML actions
+     */
+    public void record_timeout_reason(Long delay, String reason) {
+        _timeout_log.add(new Timeout_log(new java.util.Date(), delay, reason));
+    }
+
+    public void set_number_of_fire_truck_required(Integer number_of_fire_truck_required) {
+        _number_of_fire_truck_required = number_of_fire_truck_required;
+    }
+
+    public void set_number_of_police_vehicle_required(Integer number_of_police_vehicle_required) {
+        _number_of_police_vehicle_required = number_of_police_vehicle_required;
+    }
+
+    public void fire_trucks_dispatched_add(String fire_truck) {
+        _fire_trucks_dispatched.add(fire_truck);
+    }
+
+    public void police_vehicles_dispatched_add(String police_vehicle) {
+        _police_vehicles_dispatched.add(police_vehicle);
+    }
+
+    public void fire_trucks_arrived_add(String fire_truck) {
+        if (_fire_trucks_dispatched.contains(fire_truck)) {
+            _fire_trucks_arrived.add(fire_truck);
+        }
+    }
+
+    public void police_vehicles_arrived_add(String police_vehicle) {
+        if (_police_vehicles_dispatched.contains(police_vehicle)) {
+            _police_vehicles_arrived.add(police_vehicle);
+        }
+    }
+
+    public boolean fire_trucks_dispatched_remove(String fire_truck) {
+        return _fire_trucks_dispatched.remove(fire_truck);
+    }
+
+    public void fire_trucks_dispatched_remove(String fire_truck, String replacement_fire_truck) {
+        if (_fire_trucks_dispatched.remove(fire_truck)) {
+            if (replacement_fire_truck != null) {
+                _fire_trucks_dispatched.add(replacement_fire_truck);
+            }
+        }
+    }
+
+    public boolean police_vehicles_dispatched_remove(String police_vehicle) {
+        return _police_vehicles_dispatched.remove(police_vehicle);
+    }
+
+    public void police_vehicles_dispatched_remove(String police_vehicle, String replacement_police_vehicle) {
+        if (_police_vehicles_dispatched.remove(police_vehicle)) {
+            if (replacement_police_vehicle != null) {
+                _police_vehicles_dispatched.add(replacement_police_vehicle);
+            }
+        }
+    }
+
+    public boolean fire_truck_recalled() {
+        boolean recalled = false;
+        for (String fire_truck : _fire_trucks_dispatched) {
+            if (!_fire_trucks_arrived.contains(fire_truck)) {
+                _fire_trucks_dispatched.remove(fire_truck);
+                recalled = true;
+                break;
+            }
+        }
+        if (!recalled && !_fire_trucks_dispatched.isEmpty()) {
+            _fire_trucks_dispatched.remove((new java.util.Random()).nextInt(_fire_trucks_dispatched.size()));
+            recalled = true;
+        }
+        return recalled;
+    }
+
+    public boolean police_vehicle_recalled() {
+        boolean recalled = false;
+        for (String fire_truck : _police_vehicles_dispatched) {
+            if (!_police_vehicles_dispatched.contains(fire_truck)) {
+                _police_vehicles_dispatched.remove(fire_truck);
+                recalled = true;
+                break;
+            }
+        }
+        if (!recalled && !_police_vehicles_dispatched.isEmpty()) {
+            _police_vehicles_dispatched.remove((new java.util.Random()).nextInt(_police_vehicles_dispatched.size()));
+            recalled = true;
+        }
+        return recalled;
+    }
+
+    /**
+     * Invariants
+     */
+    public boolean FT_dispatched_equal_to_FT_required() {
+        return _number_of_fire_truck_required == _fire_trucks_dispatched.size();
+    }
+
+    public boolean PV_dispatched_equal_to_PV_required() {
+        return _number_of_police_vehicle_required == _police_vehicles_dispatched.size();
+    }
+
+    public boolean FT_arrived_greater_or_equal_to_FT_dispatched() {
+        return _fire_trucks_dispatched.size() <= _fire_trucks_arrived.size();
+    }
+
+    public boolean PV_arrived_greater_or_equal_to_PV_dispatched() {
+        return _police_vehicles_dispatched.size() <= _police_vehicles_arrived.size();
+    }
+
 }

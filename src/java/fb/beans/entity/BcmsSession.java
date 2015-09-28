@@ -45,6 +45,10 @@ public class BcmsSession implements Serializable {
     @Column(name = "POLICE_TRUCK_NUMBER")
     private Integer policeTruckNumber;
     @OneToMany(mappedBy = "sessionId")
+    private Collection<BcmsSessionPoliceVehicle> bcmsSessionPoliceVehicleCollection;
+    @OneToMany(mappedBy = "sessionId")
+    private Collection<BcmsSessionFireTruck> bcmsSessionFireTruckCollection;
+    @OneToMany(mappedBy = "sessionId")
     private Collection<Event> eventCollection;
 
     public BcmsSession() {
@@ -76,6 +80,24 @@ public class BcmsSession implements Serializable {
 
     public void setPoliceTruckNumber(Integer policeTruckNumber) {
         this.policeTruckNumber = policeTruckNumber;
+    }
+
+    @XmlTransient
+    public Collection<BcmsSessionPoliceVehicle> getBcmsSessionPoliceVehicleCollection() {
+        return bcmsSessionPoliceVehicleCollection;
+    }
+
+    public void setBcmsSessionPoliceVehicleCollection(Collection<BcmsSessionPoliceVehicle> bcmsSessionPoliceVehicleCollection) {
+        this.bcmsSessionPoliceVehicleCollection = bcmsSessionPoliceVehicleCollection;
+    }
+
+    @XmlTransient
+    public Collection<BcmsSessionFireTruck> getBcmsSessionFireTruckCollection() {
+        return bcmsSessionFireTruckCollection;
+    }
+
+    public void setBcmsSessionFireTruckCollection(Collection<BcmsSessionFireTruck> bcmsSessionFireTruckCollection) {
+        this.bcmsSessionFireTruckCollection = bcmsSessionFireTruckCollection;
     }
 
     @XmlTransient

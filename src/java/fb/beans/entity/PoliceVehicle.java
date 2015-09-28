@@ -6,16 +6,19 @@
 package fb.beans.entity;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -35,6 +38,8 @@ public class PoliceVehicle implements Serializable {
     @Size(min = 1, max = 30)
     @Column(name = "POLICE_VEHICLE_NAME")
     private String policeVehicleName;
+    @OneToMany(mappedBy = "policeVehicleName")
+    private Collection<BcmsSessionPoliceVehicle> bcmsSessionPoliceVehicleCollection;
 
     public PoliceVehicle() {
     }
@@ -49,6 +54,15 @@ public class PoliceVehicle implements Serializable {
 
     public void setPoliceVehicleName(String policeVehicleName) {
         this.policeVehicleName = policeVehicleName;
+    }
+
+    @XmlTransient
+    public Collection<BcmsSessionPoliceVehicle> getBcmsSessionPoliceVehicleCollection() {
+        return bcmsSessionPoliceVehicleCollection;
+    }
+
+    public void setBcmsSessionPoliceVehicleCollection(Collection<BcmsSessionPoliceVehicle> bcmsSessionPoliceVehicleCollection) {
+        this.bcmsSessionPoliceVehicleCollection = bcmsSessionPoliceVehicleCollection;
     }
 
     @Override

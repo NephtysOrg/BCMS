@@ -21,8 +21,6 @@ public interface FireStationCoordinatorRemote {
 
     public void route_for_fire_trucks() throws Statechart_exception;
 
-    public void no_more_route_left() throws Statechart_exception;
-
     public void FSC_agrees_about_fire_truck_route() throws Statechart_exception;
 
     public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception;
@@ -43,4 +41,7 @@ public interface FireStationCoordinatorRemote {
 
     public void fire_truck_blocked(String fire_truck) throws Statechart_exception;
 
+    public void crisis_is_more_severe() throws Statechart_exception;
+    
+    public void crisis_is_less_severe() throws Statechart_exception;
 }
