@@ -431,6 +431,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
+        
         Event event = new Event();
         event.setSessionId(_session);
         event.setExecutionTrace(_bCMS_state_machine.current_state());
@@ -450,6 +451,11 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void route_for_fire_trucks() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Route_for_fire_trucks);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
@@ -460,26 +466,53 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void FSC_agrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_fire_truck_route);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
     public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_police_vehicle_route);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
     public void FSC_disagrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_fire_truck_route);
+        
+         Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);      
     }
 
     @Override
     public void FSC_disagrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_police_vehicle_route);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
+        
+        //On ne sait pas ce que fait AbstractStatechart_monitor.Compute_invariants !!!
     }
 
     @Override
@@ -494,6 +527,11 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void enough_fire_trucks_arrived() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_arrived, AbstractStatechart_monitor.Compute_invariants);
+        
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
     }
 
     @Override
