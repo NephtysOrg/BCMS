@@ -15,19 +15,19 @@ import javax.ejb.Remote;
 @Remote
 public interface FireStationCoordinatorRemote {
 
-    public void FSC_connection_request() throws Statechart_exception;
+    public void FSC_connection_request() throws Statechart_exception; //done
 
-    public void state_fire_truck_number(int number_of_fire_truck_required) throws Statechart_exception;
+    public void state_fire_truck_number(int number_of_fire_truck_required) throws Statechart_exception; //done
 
-    public void route_for_fire_trucks() throws Statechart_exception;
+    public void route_for_fire_trucks() throws Statechart_exception; //done
 
-    public void FSC_agrees_about_fire_truck_route() throws Statechart_exception;
+    public void FSC_agrees_about_fire_truck_route() throws Statechart_exception; //done
 
-    public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception;
+    public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception; //done
 
-    public void FSC_disagrees_about_fire_truck_route() throws Statechart_exception;
+    public void FSC_disagrees_about_fire_truck_route() throws Statechart_exception; //done
 
-    public void FSC_disagrees_about_police_vehicle_route() throws Statechart_exception;
+    public void FSC_disagrees_about_police_vehicle_route() throws Statechart_exception; //done
 
     public void enough_fire_trucks_dispatched() throws Statechart_exception;
 

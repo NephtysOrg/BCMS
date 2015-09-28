@@ -6,6 +6,7 @@
 package fb.beans.entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "BcmsSessionFireTruck.findAll", query = "SELECT b FROM BcmsSessionFireTruck b"),
     @NamedQuery(name = "BcmsSessionFireTruck.findByBcmsSessionFireTruckId", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.bcmsSessionFireTruckId = :bcmsSessionFireTruckId"),
     @NamedQuery(name = "BcmsSessionFireTruck.findByFireTruckStatus", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.fireTruckStatus = :fireTruckStatus")})
+    @NamedQuery(name = "BcmsSessionFireTruck.findByFireTruckNameSession", query ="SELECT b FROM BcmsSessionFireTruck b WHERE b.fireTruckName = :fireTruckName AND b.sessionId = :sessionId")
 public class BcmsSessionFireTruck implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -86,6 +88,7 @@ public class BcmsSessionFireTruck implements Serializable {
     public void setSessionId(BcmsSession sessionId) {
         this.sessionId = sessionId;
     }
+    
 
     @Override
     public int hashCode() {

@@ -15,11 +15,14 @@ import fb.beans.entity.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Startup;
+import javax.persistence.Query;
 
 final class Timeout_log {
 
@@ -507,12 +510,14 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
         
-        Event event = new Event();
-        event.setSessionId(_session);
-        event.setExecutionTrace(_bCMS_state_machine.current_state());
-        _entity_manager.persist(event);
+        /*int fire_truck_number_required = _session.getFireTruckNumber();
         
-        //On ne sait pas ce que fait AbstractStatechart_monitor.Compute_invariants !!!
+        BcmsSessionFireTruck bcmsSessionFireTruck = _entity_manager.find(null, _Timeout);
+        
+        //int fire_trucks_dispatched = */
+        
+       
+        
     }
 
     @Override
@@ -521,17 +526,26 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_Fire_truck_dispatched, _Step_4_Dispatching, _Step_4_Dispatching, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
         _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "fire_trucks_dispatched_add", new Object[]{fire_truck});
         _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
-        _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);
+        
+        _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);     
+         
+        Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByFireTruckNameSession");
+        q.setParameter(fire_truck,_session.getSessionId());
+        Collection collectionFireTruck = q.getResultList();
+        
+        Iterator iterator = collectionFireTruck.iterator();
+        while(iterator.hasNext()){
+            Object object = iterator.next();
+            BcmsSessionFireTruck bcmsSessionFireTruck = (BcmsSessionFireTruck) object;
+            bcmsSessionFireTruck.setFireTruckStatus("Dispatched");
+            _entity_manager.merge(bcmsSessionFireTruck);
+        }    
     }
 
     @Override
     public void enough_fire_trucks_arrived() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_arrived, AbstractStatechart_monitor.Compute_invariants);
         
-        Event event = new Event();
-        event.setSessionId(_session);
-        event.setExecutionTrace(_bCMS_state_machine.current_state());
-        _entity_manager.persist(event);
     }
 
     @Override
