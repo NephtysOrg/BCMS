@@ -510,26 +510,16 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
         
+        /*we have to check if we have enough fire trucks dispatched*/
         
-        
-        //we have to check if we have enough fire trucks dispatched
+        String fire_truck_status = "DISPATCHED";
         int fire_truck_number_required = _session.getFireTruckNumber();
         int fire_truck_number_dispatched = 0;
         
-           
-        Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByFireTruckNameSession");
-        q.setParameter(fire_truck,_session.getSessionId());
-        Collection collectionFireTruck = q.getResultList();
+        Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck, findByFireTruckStatusSession");
+        q.setParameter(_session.getSessionId(),fire_truck_status);
         
-        Iterator iterator = collectionFireTruck.iterator();
-        while(iterator.hasNext()){
-            Object object = iterator.next();
-            BcmsSessionFireTruck bcmsSessionFireTruck = (BcmsSessionFireTruck) object;
-            bcmsSessionFireTruck.setFireTruckStatus("Dispatched");
-            _entity_manager.merge(bcmsSessionFireTruck);
-        } 
-        
-        //BcmsSessionFireTruck bcmsSessionFireTruck = _entity_manager.find();
+       
           
     }
 
