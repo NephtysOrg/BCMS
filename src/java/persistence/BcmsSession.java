@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fb.beans.entity;
+package persistence;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -62,15 +62,17 @@ public class BcmsSession implements Serializable {
 
     /**
      * Before persist, we create a PK based on the class name and the current
-     * datetime
+     * datetime if there is no PK sets
      */
     @PrePersist
     public void onCreate() {
-        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        Date today = Calendar.getInstance().getTime();
-        String date = df.format(today);
+        if (this.getSessionId()== null) {
+            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            Date today = Calendar.getInstance().getTime();
+            String date = df.format(today);
 
-        this.setSessionId(this.getClass().getSimpleName() + date);
+            this.setSessionId(this.getClass().getSimpleName() + date);
+        }
     }
 
     public BcmsSession(String sessionId) {

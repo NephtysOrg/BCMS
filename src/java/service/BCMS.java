@@ -3,18 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fb.beans.session;
+package service;
 
+import persistence.BcmsSession;
+import persistence.Route;
+import persistence.Event;
 import javax.ejb.Singleton;
 import javax.ejb.LocalBean;
 
 import com.pauware.pauware_engine._Core.*;
 import com.pauware.pauware_engine._Exception.*;
 import com.pauware.pauware_engine._Java_EE.*;
-import fb.beans.entity.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -148,6 +151,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     protected AbstractStatechart_monitor _bCMS_state_machine;
 
     protected BcmsSession _session;
+
+    private Route _last_fire_truck_route;
+    private Route _last_police_vehicle_route;
 
     @javax.persistence.PersistenceContext(name = "CrisisPU")
     private javax.persistence.EntityManager _entity_manager;
@@ -389,17 +395,41 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
              */
             _bCMS_state_machine.fires(_Close, _Completion_of_objectives, _End_of_crisis);
 
-            // Creation de la session dans la BD
+            // Insert session into database
             _session = new BcmsSession();
             _entity_manager.persist(_session);
 
             _bCMS_state_machine.start();
+
+            // Scenario
+            FSC_connection_request();
+            PSC_connection_request();
+
             state_police_vehicle_number(5);
             state_fire_truck_number(4);
-            System.out.println("BCMS Started.");
+
+            route_for_fire_trucks("Road 1");
+            route_for_police_vehicles("Road 2");
+
         } catch (Statechart_exception ex) {
             Logger.getLogger(BCMS.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void create_event(String event_name) {
+        Event event = new Event();
+        event.setSessionId(_session);
+        event.setEventName(event_name);
+        event.setExecutionTrace(_bCMS_state_machine.current_state());
+        _entity_manager.persist(event);
+    }
+
+    private String now() {
+        String result = null;
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date today = Calendar.getInstance().getTime();
+        result = df.format(today);
+        return result;
     }
 
     @PreDestroy
@@ -431,10 +461,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
-        Event event = new Event();
-        event.setSessionId(_session);
-        event.setExecutionTrace(_bCMS_state_machine.current_state());
-        _entity_manager.persist(event);
+        create_event(_FSC_connection_request+now());
     }
 
     @Override
@@ -442,14 +469,20 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_State_fire_truck_number, _Crisis_details_exchange, _Number_of_fire_truck_defined, true, this, "set_number_of_fire_truck_required", new Object[]{number_of_fire_truck_required});
         _bCMS_state_machine.fires(_State_fire_truck_number, _Number_of_police_vehicle_defined, _Route_plan_development, true, this, "set_number_of_fire_truck_required", new Object[]{number_of_fire_truck_required});
         _bCMS_state_machine.run_to_completion(_State_fire_truck_number);
-        
+
         _session.setFireTruckNumber(number_of_fire_truck_required);
         _entity_manager.merge(_session);
     }
 
     @Override
-    public void route_for_fire_trucks() throws Statechart_exception {
-        _bCMS_state_machine.run_to_completion(_Route_for_fire_trucks);
+    public void route_for_fire_trucks(String route_name) throws Statechart_exception {
+        _last_fire_truck_route = null;
+        _last_fire_truck_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
+        if (_last_fire_truck_route != null) {
+            _bCMS_state_machine.run_to_completion(_Route_for_fire_trucks);
+        } else {
+            throw new Statechart_exception("Fire truck route " + route_name + " does not exist...");
+        }
     }
 
     @Override
@@ -506,6 +539,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void PSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_PSC_connection_request);
+        create_event(_PSC_connection_request+now());
     }
 
     @Override
@@ -513,14 +547,20 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_State_police_vehicle_number, _Crisis_details_exchange, _Number_of_police_vehicle_defined, true, this, "set_number_of_police_vehicle_required", new Object[]{number_of_police_vehicle_required});
         _bCMS_state_machine.fires(_State_police_vehicle_number, _Number_of_fire_truck_defined, _Route_plan_development, true, this, "set_number_of_police_vehicle_required", new Object[]{number_of_police_vehicle_required});
         _bCMS_state_machine.run_to_completion(_State_police_vehicle_number);
-        
+
         _session.setPoliceTruckNumber(number_of_police_vehicle_required);
         _entity_manager.merge(_session);
     }
 
     @Override
-    public void route_for_police_vehicles() throws Statechart_exception {
-        _bCMS_state_machine.run_to_completion(_Route_for_police_vehicles);
+    public void route_for_police_vehicles(String route_name) throws Statechart_exception {
+        _last_police_vehicle_route = null;
+        _last_police_vehicle_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
+        if (_last_police_vehicle_route != null) {
+            _bCMS_state_machine.run_to_completion(_Route_for_police_vehicles);
+        } else {
+            throw new Statechart_exception("Police vehicle route " + route_name + " does not exist...");
+        }
     }
 
     @Override

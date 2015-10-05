@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fb.beans.entity;
+package persistence;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -58,16 +58,15 @@ public class Event implements Serializable {
         this.eventName = eventName;
     }
 
-    /**
-     * Before persist, we create a PK based on the class name and the current datetime
-     */
-    @PrePersist
+     @PrePersist
     public void onCreate() {
-        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        Date today = Calendar.getInstance().getTime();
-        String date = df.format(today);
+        if (this.getEventName()== null) {
+            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            Date today = Calendar.getInstance().getTime();
+            String date = df.format(today);
 
-        this.setEventName(this.getClass().getSimpleName() + date);
+            this.setEventName(this.getClass().getSimpleName() + date);
+        }
     }
 
     public String getEventName() {

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fb.beans.session;
+package service;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
 import javax.ejb.Remote;
@@ -19,7 +19,7 @@ public interface PoliceStationCoordinatorRemote {
 
     public void state_police_vehicle_number(int number_of_police_vehicle_required) throws Statechart_exception;
 
-    public void route_for_police_vehicles() throws Statechart_exception;
+    public void route_for_police_vehicles(String route_name) throws Statechart_exception;
 
     public void no_more_route_left() throws Statechart_exception;
 
