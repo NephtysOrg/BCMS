@@ -19,7 +19,7 @@ public interface FireStationCoordinatorRemote {
 
     public void state_fire_truck_number(int number_of_fire_truck_required) throws Statechart_exception; //done
 
-    public void route_for_fire_trucks() throws Statechart_exception; //done
+    public void route_for_fire_trucks() throws Statechart_exception; //done by charles follet and updated by fbarbier
 
     public void FSC_agrees_about_fire_truck_route() throws Statechart_exception; //done
 
@@ -31,7 +31,7 @@ public interface FireStationCoordinatorRemote {
 
     public void enough_fire_trucks_dispatched() throws Statechart_exception;
 
-    public void fire_truck_dispatched(String fire_truck) throws Statechart_exception;
+    public void fire_truck_dispatched(String fire_truck) throws Statechart_exception; //done
 
     public void enough_fire_trucks_arrived() throws Statechart_exception;
 

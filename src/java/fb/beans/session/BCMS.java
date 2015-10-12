@@ -509,7 +509,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
-
         //we have to check if we have enough fire trucks dispatched
         int fire_truck_number_required = _session.getFireTruckNumber();
         int fire_truck_number_dispatched;
@@ -522,8 +521,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         if (fire_truck_number_dispatched >= fire_truck_number_required){
             System.out.println("Enough fire trucks dispatched");
         }
-        
-        
     }
 
     @Override
