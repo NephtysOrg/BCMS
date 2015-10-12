@@ -23,6 +23,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Startup;
+import persistence.BcmsSessionFireTruck;
+import persistence.FireTruck;
 
 final class Timeout_log {
 
@@ -405,8 +407,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             FSC_connection_request();
             PSC_connection_request();
 
-            state_police_vehicle_number(5);
-            state_fire_truck_number(4);
+            state_fire_truck_number(((Number)_entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
+            state_police_vehicle_number(((Number)_entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue());
 
             route_for_fire_trucks("Road 1");
             route_for_police_vehicles("Road 2");
@@ -461,7 +463,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
-        create_event(_FSC_connection_request+now());
+        create_event(_FSC_connection_request + now());
     }
 
     @Override
@@ -479,6 +481,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _last_fire_truck_route = null;
         _last_fire_truck_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
         if (_last_fire_truck_route != null) {
+            create_event(_Route_for_fire_trucks + now());
             _bCMS_state_machine.run_to_completion(_Route_for_fire_trucks);
         } else {
             throw new Statechart_exception("Fire truck route " + route_name + " does not exist...");
@@ -516,12 +519,24 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     }
 
     @Override
-    public void fire_truck_dispatched(String fire_truck) throws Statechart_exception {
-        _bCMS_state_machine.fires(_Fire_truck_dispatched, _Step_4_Dispatching, _Step_4_Dispatching, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "fire_trucks_dispatched_add", new Object[]{fire_truck});
-        _bCMS_state_machine.fires(_Fire_truck_dispatched, _Step_4_Dispatching, _Step_4_Dispatching, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
-        _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "fire_trucks_dispatched_add", new Object[]{fire_truck});
-        _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
-        _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);
+    public void fire_truck_dispatched(String fire_truck_name) throws Statechart_exception {
+        FireTruck fire_truck = _entity_manager.find(FireTruck.class, fire_truck_name);
+
+        if (fire_truck != null) {
+            create_event(_Fire_truck_dispatched + now());
+            BcmsSessionFireTruck session_ft = new BcmsSessionFireTruck();
+            session_ft.setFireTruckName(fire_truck);
+            session_ft.setSessionId(_session);
+            
+            _bCMS_state_machine.fires(_Fire_truck_dispatched, _Step_4_Dispatching, _Step_4_Dispatching, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "fire_trucks_dispatched_add", new Object[]{fire_truck});
+            _bCMS_state_machine.fires(_Fire_truck_dispatched, _Step_4_Dispatching, _Step_4_Dispatching, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
+            _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "fire_trucks_dispatched_add", new Object[]{fire_truck});
+            _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
+            _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);
+        } else {
+            throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
+        }
+
     }
 
     @Override
@@ -539,7 +554,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     @Override
     public void PSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_PSC_connection_request);
-        create_event(_PSC_connection_request+now());
+        create_event(_PSC_connection_request + now());
     }
 
     @Override
@@ -557,6 +572,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _last_police_vehicle_route = null;
         _last_police_vehicle_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
         if (_last_police_vehicle_route != null) {
+            create_event(_Route_for_police_vehicles + now());
             _bCMS_state_machine.run_to_completion(_Route_for_police_vehicles);
         } else {
             throw new Statechart_exception("Police vehicle route " + route_name + " does not exist...");

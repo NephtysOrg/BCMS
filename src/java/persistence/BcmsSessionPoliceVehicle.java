@@ -6,6 +6,10 @@
 package persistence;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -53,6 +58,17 @@ public class BcmsSessionPoliceVehicle implements Serializable {
 
     public BcmsSessionPoliceVehicle(String bcmsSessionPoliceVehicleId) {
         this.bcmsSessionPoliceVehicleId = bcmsSessionPoliceVehicleId;
+    }
+    
+    @PrePersist
+    public void onCreate() {
+        if (this.getBcmsSessionPoliceVehicleId()== null) {
+            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            Date today = Calendar.getInstance().getTime();
+            String date = df.format(today);
+
+            this.setBcmsSessionPoliceVehicleId(this.getClass().getSimpleName() + date);
+        }
     }
 
     public String getBcmsSessionPoliceVehicleId() {

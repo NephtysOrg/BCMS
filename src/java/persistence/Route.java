@@ -6,17 +6,12 @@
 package persistence;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -47,21 +42,6 @@ public class Route implements Serializable {
 
     public Route(String routeName) {
         this.routeName = routeName;
-    }
-
-    /**
-     * Before persist, we create a PK based on the class name and the current
-     * datetime if there is no PK sets
-     */
-    @PrePersist
-    public void onCreate() {
-        if (this.getRouteName() == null) {
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date today = Calendar.getInstance().getTime();
-            String date = df.format(today);
-
-            this.setRouteName(this.getClass().getSimpleName() + date);
-        }
     }
 
     public String getRouteName() {
