@@ -459,12 +459,22 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     public void close() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Close);
     }
+    
+    /*************************************
+     * 
+     * Business Methods implementations
+     *************************************/
+    
+    /**
+     * 
+     * FSC Implementation
+     */
 
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
         create_event(_FSC_connection_request + now());
-    }
+    }//Done
 
     @Override
     public void state_fire_truck_number(int number_of_fire_truck_required) throws Statechart_exception {
@@ -474,7 +484,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
 
         _session.setFireTruckNumber(number_of_fire_truck_required);
         _entity_manager.merge(_session);
-    }
+    }//Done
 
     @Override
     public void route_for_fire_trucks(String route_name) throws Statechart_exception {
@@ -486,37 +496,32 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         } else {
             throw new Statechart_exception("Fire truck route " + route_name + " does not exist...");
         }
-    }
-
-    @Override
-    public void no_more_route_left() throws Statechart_exception {
-        _bCMS_state_machine.run_to_completion(_No_more_route_left);
-    }
+    }//Done
 
     @Override
     public void FSC_agrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_fire_truck_route);
-    }
+    }//Todo
 
     @Override
     public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_police_vehicle_route);
-    }
+    }//Todo
 
     @Override
     public void FSC_disagrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_fire_truck_route);
-    }
+    }//Todo
 
     @Override
     public void FSC_disagrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_police_vehicle_route);
-    }
+    }//Todo
 
     @Override
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
-    }
+    }//Todo
 
     @Override
     public void fire_truck_dispatched(String fire_truck_name) throws Statechart_exception {
@@ -537,20 +542,44 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
 
-    }
+    }//Done
 
     @Override
     public void enough_fire_trucks_arrived() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_arrived, AbstractStatechart_monitor.Compute_invariants);
-    }
+    }//Todo
 
     @Override
     public void fire_truck_arrived(String fire_truck) throws Statechart_exception {
         _bCMS_state_machine.fires(_Fire_truck_arrived, _Fire_trucks_arriving, _Fire_trucks_arriving, this, "fire_truck_arrived_less_than_fire_truck_dispatched", null, this, "fire_trucks_arrived_add", new Object[]{fire_truck});
         _bCMS_state_machine.fires(_Fire_truck_arrived, _Fire_trucks_arriving, _Fire_trucks_arriving, this, "fire_truck_arrived_less_than_fire_truck_dispatched", null, this, "enough_fire_trucks_arrived", null, AbstractStatechart.Reentrance);
         _bCMS_state_machine.run_to_completion(_Fire_truck_arrived);
-    }
+    }//Todo
+    
+    @Override
+    public void fire_truck_breakdown(String fire_truck, String replacement_fire_truck) throws Statechart_exception {
+        Object[] args;
+        if (replacement_fire_truck != null) {
+            args = new Object[]{fire_truck, replacement_fire_truck};
+        } else {
+            args = new Object[]{fire_truck};
+        }
+        _Step_5_Arrival.allowedEvent(_Fire_truck_breakdown, this, "fire_trucks_dispatched_remove", args);
+        _bCMS_state_machine.run_to_completion(_Fire_truck_breakdown);
+    }//Todo
+    
+    @Override
+    public void fire_truck_blocked(String fire_truck) throws Statechart_exception {
+        _bCMS_state_machine.fires(_Fire_truck_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "fire_trucks_dispatched_remove", new Object[]{fire_truck});
+        _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
+    }//Todo
 
+    
+    /**
+     * 
+     *PSC Implementation
+     */
+    
     @Override
     public void PSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_PSC_connection_request);
@@ -565,6 +594,11 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
 
         _session.setPoliceTruckNumber(number_of_police_vehicle_required);
         _entity_manager.merge(_session);
+    }
+    
+    @Override
+    public void no_more_route_left() throws Statechart_exception {
+        _bCMS_state_machine.run_to_completion(_No_more_route_left);
     }
 
     @Override
@@ -604,37 +638,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         _bCMS_state_machine.fires(_Police_vehicle_arrived, _Police_vehicles_arriving, _Police_vehicles_arriving, this, "police_vehicle_arrived_less_than_police_vehicle_dispatched", null, this, "enough_police_vehicles_arrived", null, AbstractStatechart.Reentrance);
         _bCMS_state_machine.run_to_completion(_Police_vehicle_arrived);
     }
-
-    @Override
-    public void time_out(long delay, AbstractStatechart contexts) throws Statechart_exception {
-        _Step_3_Coordination.allowedEvent(_Timeout, this, "record_timeout_reason", new Object[]{new Long(delay), _bCMS_state_machine.current_state()});
-        _bCMS_state_machine.run_to_completion(_Timeout);
-    }
-
-    @Override
-    public void time_out_error(Statechart_exception s) throws Statechart_exception {
-        // possible fault recovery here...
-    }
-
-    @Override
-    public void fire_truck_breakdown(String fire_truck, String replacement_fire_truck) throws Statechart_exception {
-        Object[] args;
-        if (replacement_fire_truck != null) {
-            args = new Object[]{fire_truck, replacement_fire_truck};
-        } else {
-            args = new Object[]{fire_truck};
-        }
-        _Step_5_Arrival.allowedEvent(_Fire_truck_breakdown, this, "fire_trucks_dispatched_remove", args);
-        _bCMS_state_machine.run_to_completion(_Fire_truck_breakdown);
-    }
-
-    @Override
-    public void fire_truck_blocked(String fire_truck) throws Statechart_exception {
-        _bCMS_state_machine.fires(_Fire_truck_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "fire_trucks_dispatched_remove", new Object[]{fire_truck});
-        _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
-    }
-
-    @Override
+    
+        @Override
     public void police_vehicle_breakdown(String police_vehicle, String replacement_police_vehicle) throws Statechart_exception {
         Object[] args;
         if (replacement_police_vehicle != null) {
@@ -662,7 +667,24 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     public void crisis_is_less_severe() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Crisis_is_less_severe);
     }
+    
+    /**************************************************************************************************************/
+    
+    @Override
+    public void time_out(long delay, AbstractStatechart contexts) throws Statechart_exception {
+        _Step_3_Coordination.allowedEvent(_Timeout, this, "record_timeout_reason", new Object[]{new Long(delay), _bCMS_state_machine.current_state()});
+        _bCMS_state_machine.run_to_completion(_Timeout);
+    }
 
+    @Override
+    public void time_out_error(Statechart_exception s) throws Statechart_exception {
+        // possible fault recovery here...
+    }
+
+
+    
+ 
+    
     /**
      * SCXML conditions
      */
