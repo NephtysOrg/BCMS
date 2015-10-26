@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r"),
     @NamedQuery(name = "Route.findByRouteName", query = "SELECT r FROM Route r WHERE r.routeName = :routeName")})
 public class Route implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -74,7 +73,7 @@ public class Route implements Serializable {
 
     @Override
     public String toString() {
-        return "fb.beans.entity.Route[ routeName=" + routeName + " ]";
+        return "persistence.Route[ routeName=" + routeName + " ]";
     }
-
+    
 }

@@ -29,8 +29,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "PoliceVehicle.findAll", query = "SELECT p FROM PoliceVehicle p"),
-    @NamedQuery(name = "PoliceVehicle.findByPoliceVehicleName", query = "SELECT p FROM PoliceVehicle p WHERE p.policeVehicleName = :policeVehicleName"),
-    @NamedQuery(name = "PoliceVehicle.countAll", query = "SELECT count(p) FROM PoliceVehicle p")})
+    @NamedQuery(name = "PoliceVehicle.findByPoliceVehicleName", query = "SELECT p FROM PoliceVehicle p WHERE p.policeVehicleName = :policeVehicleName")})
 public class PoliceVehicle implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -88,7 +87,7 @@ public class PoliceVehicle implements Serializable {
 
     @Override
     public String toString() {
-        return "fb.beans.entity.PoliceVehicle[ policeVehicleName=" + policeVehicleName + " ]";
+        return "persistence.PoliceVehicle[ policeVehicleName=" + policeVehicleName + " ]";
     }
     
 }

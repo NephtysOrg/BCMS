@@ -29,8 +29,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "FireTruck.findAll", query = "SELECT f FROM FireTruck f"),
-    @NamedQuery(name = "FireTruck.findByFireTruckName", query = "SELECT f FROM FireTruck f WHERE f.fireTruckName = :fireTruckName"),
-    @NamedQuery(name = "FireTruck.countAll", query = "SELECT count(f) FROM FireTruck f")})
+    @NamedQuery(name = "FireTruck.findByFireTruckName", query = "SELECT f FROM FireTruck f WHERE f.fireTruckName = :fireTruckName")})
 public class FireTruck implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -88,7 +87,7 @@ public class FireTruck implements Serializable {
 
     @Override
     public String toString() {
-        return "fb.beans.entity.FireTruck[ fireTruckName=" + fireTruckName + " ]";
+        return "persistence.FireTruck[ fireTruckName=" + fireTruckName + " ]";
     }
     
 }

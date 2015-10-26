@@ -6,21 +6,17 @@
 package persistence;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -33,15 +29,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Event.findAll", query = "SELECT e FROM Event e"),
+    @NamedQuery(name = "Event.findByEventId", query = "SELECT e FROM Event e WHERE e.eventId = :eventId"),
     @NamedQuery(name = "Event.findByEventName", query = "SELECT e FROM Event e WHERE e.eventName = :eventName"),
     @NamedQuery(name = "Event.findByExecutionTrace", query = "SELECT e FROM Event e WHERE e.executionTrace = :executionTrace")})
 public class Event implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 50)
+    @Column(name = "EVENT_ID")
+    private Integer eventId;
+    @Size(max = 50)
     @Column(name = "EVENT_NAME")
     private String eventName;
     @Size(max = 500)
@@ -54,19 +52,16 @@ public class Event implements Serializable {
     public Event() {
     }
 
-    public Event(String eventName) {
-        this.eventName = eventName;
+    public Event(Integer eventId) {
+        this.eventId = eventId;
     }
 
-     @PrePersist
-    public void onCreate() {
-        if (this.getEventName()== null) {
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date today = Calendar.getInstance().getTime();
-            String date = df.format(today);
+    public Integer getEventId() {
+        return eventId;
+    }
 
-            this.setEventName(this.getClass().getSimpleName() + date);
-        }
+    public void setEventId(Integer eventId) {
+        this.eventId = eventId;
     }
 
     public String getEventName() {
@@ -96,7 +91,7 @@ public class Event implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (eventName != null ? eventName.hashCode() : 0);
+        hash += (eventId != null ? eventId.hashCode() : 0);
         return hash;
     }
 
@@ -107,7 +102,7 @@ public class Event implements Serializable {
             return false;
         }
         Event other = (Event) object;
-        if ((this.eventName == null && other.eventName != null) || (this.eventName != null && !this.eventName.equals(other.eventName))) {
+        if ((this.eventId == null && other.eventId != null) || (this.eventId != null && !this.eventId.equals(other.eventId))) {
             return false;
         }
         return true;
@@ -115,7 +110,7 @@ public class Event implements Serializable {
 
     @Override
     public String toString() {
-        return "fb.beans.entity.Event[ eventName=" + eventName + " ]";
+        return "persistence.Event[ eventId=" + eventId + " ]";
     }
-
+    
 }

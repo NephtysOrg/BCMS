@@ -6,21 +6,17 @@
 package persistence;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -38,11 +34,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BcmsSessionPoliceVehicle implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 30)
     @Column(name = "BCMS_SESSION_POLICE_VEHICLE_ID")
-    private String bcmsSessionPoliceVehicleId;
+    private Integer bcmsSessionPoliceVehicleId;
     @Size(max = 10)
     @Column(name = "POLICE_VEHICLE_STATUS")
     private String policeVehicleStatus;
@@ -56,26 +51,15 @@ public class BcmsSessionPoliceVehicle implements Serializable {
     public BcmsSessionPoliceVehicle() {
     }
 
-    public BcmsSessionPoliceVehicle(String bcmsSessionPoliceVehicleId) {
+    public BcmsSessionPoliceVehicle(Integer bcmsSessionPoliceVehicleId) {
         this.bcmsSessionPoliceVehicleId = bcmsSessionPoliceVehicleId;
     }
-    
-    @PrePersist
-    public void onCreate() {
-        if (this.getBcmsSessionPoliceVehicleId()== null) {
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date today = Calendar.getInstance().getTime();
-            String date = df.format(today);
 
-            this.setBcmsSessionPoliceVehicleId(this.getClass().getSimpleName() + date);
-        }
-    }
-
-    public String getBcmsSessionPoliceVehicleId() {
+    public Integer getBcmsSessionPoliceVehicleId() {
         return bcmsSessionPoliceVehicleId;
     }
 
-    public void setBcmsSessionPoliceVehicleId(String bcmsSessionPoliceVehicleId) {
+    public void setBcmsSessionPoliceVehicleId(Integer bcmsSessionPoliceVehicleId) {
         this.bcmsSessionPoliceVehicleId = bcmsSessionPoliceVehicleId;
     }
 
@@ -125,7 +109,7 @@ public class BcmsSessionPoliceVehicle implements Serializable {
 
     @Override
     public String toString() {
-        return "fb.beans.entity.BcmsSessionPoliceVehicle[ bcmsSessionPoliceVehicleId=" + bcmsSessionPoliceVehicleId + " ]";
+        return "persistence.BcmsSessionPoliceVehicle[ bcmsSessionPoliceVehicleId=" + bcmsSessionPoliceVehicleId + " ]";
     }
     
 }
