@@ -448,6 +448,24 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
 
     }
 
+    private void update_session_vehicle_status(Object vehicle, String status) {
+        if (vehicle instanceof FireTruck) {
+            FireTruck ft = (FireTruck) vehicle;
+            Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByFireTruckNameAndSessionName").setParameter("fireTruckName", ft).setParameter("sessionId", _session);
+            BcmsSessionFireTruck session_ft = (BcmsSessionFireTruck) q.getSingleResult();
+            session_ft.setFireTruckStatus(status);
+            _entity_manager.merge(session_ft);
+        }
+
+        if (vehicle instanceof PoliceVehicle) {
+            PoliceVehicle pv = (PoliceVehicle) vehicle;
+            Query q = _entity_manager.createNamedQuery("BcmsSessionPoliceVehicle.findByPoliceVehicleNameAndSessionName").setParameter("policeVehicleName", pv).setParameter("sessionId", _session);
+            BcmsSessionPoliceVehicle session_pv = (BcmsSessionPoliceVehicle) q.getSingleResult();
+            session_pv.setPoliceVehicleStatus(status);
+            _entity_manager.merge(session_pv);
+        }
+    }
+
     /**
      * Persist an event
      *
@@ -600,10 +618,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Fire_truck_dispatched, _All_police_vehicles_dispatched, _All_police_vehicles_dispatched, this, "fire_truck_dispatched_less_than_number_of_fire_truck_required", null, this, "enough_fire_trucks_dispatched", null, AbstractStatechart.Reentrance);
             _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);
 
-            Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByFireTruckName").setParameter("policeVehicleName", fire_truck).setParameter("sessionId", _session);
-            BcmsSessionFireTruck session_ft = (BcmsSessionFireTruck) q.getSingleResult();
-            session_ft.setFireTruckStatus("Dispatched");
-            _entity_manager.merge(session_ft);
+            update_session_vehicle_status(fire_truck, "Dispatched");
             create_event(_Fire_truck_dispatched);
         } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
@@ -627,11 +642,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Fire_truck_arrived, _Fire_trucks_arriving, _Fire_trucks_arriving, this, "fire_truck_arrived_less_than_fire_truck_dispatched", null, this, "enough_fire_trucks_arrived", null, AbstractStatechart.Reentrance);
             _bCMS_state_machine.run_to_completion(_Fire_truck_arrived);
 
-            Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByFireTruckNameAndSessionName").setParameter("fireTruckName", fire_truck).setParameter("sessionId", _session);
-            BcmsSessionFireTruck session_ft = (BcmsSessionFireTruck) q.getSingleResult();
-            session_ft.setFireTruckStatus("Arrived");
-            _entity_manager.merge(session_ft);
-        }else{
+            update_session_vehicle_status(fire_truck, "Arrived");
+            create_event(_Fire_truck_arrived);
+        } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
     }
@@ -707,11 +720,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Police_vehicle_dispatched, _All_fire_trucks_dispatched, _All_fire_trucks_dispatched, this, "police_vehicle_dispatched_less_than_number_of_police_vehicle_required", null, this, "enough_police_vehicles_dispatched", null, AbstractStatechart.Reentrance);
             _bCMS_state_machine.run_to_completion(_Police_vehicle_dispatched);
 
-            Query q = _entity_manager.createNamedQuery("BcmsSessionPoliceVehicle.findByPoliceVehicleNameAndSessionName").setParameter("policeVehicleName", police_vehicle).setParameter("sessionId", _session);
-            BcmsSessionPoliceVehicle session_pv = (BcmsSessionPoliceVehicle) q.getSingleResult();
-            session_pv.setPoliceVehicleStatus("Dispatched");
-            _entity_manager.merge(session_pv);
+            update_session_vehicle_status(police_vehicle, "Dispatched");
             create_event(_Police_vehicle_dispatched);
+
         } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
         }
@@ -733,11 +744,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Police_vehicle_arrived, _Police_vehicles_arriving, _Police_vehicles_arriving, this, "police_vehicle_arrived_less_than_police_vehicle_dispatched", null, this, "enough_police_vehicles_arrived", null, AbstractStatechart.Reentrance);
             _bCMS_state_machine.run_to_completion(_Police_vehicle_arrived);
 
-            Query q = _entity_manager.createNamedQuery("BcmsSessionPoliceVehicle.findByPoliceVehicleNameAndSessionName").setParameter("policeVehicleName", police_vehicle).setParameter("sessionId", _session);
-            BcmsSessionPoliceVehicle session_pv = (BcmsSessionPoliceVehicle) q.getSingleResult();
-            session_pv.setPoliceVehicleStatus("Arrived");
-            _entity_manager.merge(session_pv);
-        }else {
+             update_session_vehicle_status(police_vehicle, "Arrived");
+            create_event(_Police_vehicle_arrived);
+        } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
         }
     }
