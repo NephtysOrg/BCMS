@@ -6,6 +6,7 @@
 package persistence;
 
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -30,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "Event.findAll", query = "SELECT e FROM Event e"),
     @NamedQuery(name = "Event.findByEventId", query = "SELECT e FROM Event e WHERE e.eventId = :eventId"),
+    @NamedQuery(name = "Event.findByEventOccurrenceTime", query = "SELECT e FROM Event e WHERE e.eventOccurrenceTime = :eventOccurrenceTime"),
     @NamedQuery(name = "Event.findByEventName", query = "SELECT e FROM Event e WHERE e.eventName = :eventName"),
     @NamedQuery(name = "Event.findByExecutionTrace", query = "SELECT e FROM Event e WHERE e.executionTrace = :executionTrace")})
 public class Event implements Serializable {
@@ -39,6 +43,9 @@ public class Event implements Serializable {
     @Basic(optional = false)
     @Column(name = "EVENT_ID")
     private Integer eventId;
+    @Column(name = "EVENT_OCCURRENCE_TIME")
+    @Temporal(TemporalType.TIME)
+    private Date eventOccurrenceTime;
     @Size(max = 50)
     @Column(name = "EVENT_NAME")
     private String eventName;
@@ -62,6 +69,14 @@ public class Event implements Serializable {
 
     public void setEventId(Integer eventId) {
         this.eventId = eventId;
+    }
+
+    public Date getEventOccurrenceTime() {
+        return eventOccurrenceTime;
+    }
+
+    public void setEventOccurrenceTime(Date eventOccurrenceTime) {
+        this.eventOccurrenceTime = eventOccurrenceTime;
     }
 
     public String getEventName() {

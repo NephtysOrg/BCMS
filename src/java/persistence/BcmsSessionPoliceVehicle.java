@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "BcmsSessionPoliceVehicle.findAll", query = "SELECT b FROM BcmsSessionPoliceVehicle b"),
     @NamedQuery(name = "BcmsSessionPoliceVehicle.findByBcmsSessionPoliceVehicleId", query = "SELECT b FROM BcmsSessionPoliceVehicle b WHERE b.bcmsSessionPoliceVehicleId = :bcmsSessionPoliceVehicleId"),
+    @NamedQuery(name = "BcmsSessionPoliceVehicle.findByPoliceVehicleNameAndSessionName", query = "SELECT b FROM BcmsSessionPoliceVehicle b WHERE b.policeVehicleName = :policeVehicleName and b.sessionId = :sessionId"),
     @NamedQuery(name = "BcmsSessionPoliceVehicle.findByPoliceVehicleStatus", query = "SELECT b FROM BcmsSessionPoliceVehicle b WHERE b.policeVehicleStatus = :policeVehicleStatus")})
 public class BcmsSessionPoliceVehicle implements Serializable {
     private static final long serialVersionUID = 1L;
