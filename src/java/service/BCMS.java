@@ -744,7 +744,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Police_vehicle_arrived, _Police_vehicles_arriving, _Police_vehicles_arriving, this, "police_vehicle_arrived_less_than_police_vehicle_dispatched", null, this, "enough_police_vehicles_arrived", null, AbstractStatechart.Reentrance);
             _bCMS_state_machine.run_to_completion(_Police_vehicle_arrived);
 
-             update_session_vehicle_status(police_vehicle, "Arrived");
+            update_session_vehicle_status(police_vehicle, "Arrived");
             create_event(_Police_vehicle_arrived);
         } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
@@ -775,9 +775,20 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     }
 
     @Override
-    public void fire_truck_blocked(String fire_truck) throws Statechart_exception {
-        _bCMS_state_machine.fires(_Fire_truck_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "fire_trucks_dispatched_remove", new Object[]{fire_truck});
-        _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
+    public void fire_truck_blocked(String fire_truck_name) throws Statechart_exception {
+
+        FireTruck fire_truck = _entity_manager.find(FireTruck.class, fire_truck_name);
+
+        if (fire_truck != null) {
+            _bCMS_state_machine.fires(_Fire_truck_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "fire_trucks_dispatched_remove", new Object[]{fire_truck_name});
+            _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
+            
+            update_session_vehicle_status(fire_truck, "Blocked");
+            create_event(_Fire_truck_blocked);
+        }else{
+            throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
+        }
+
     }
 
     @Override
@@ -794,9 +805,18 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
     }
 
     @Override
-    public void police_vehicle_blocked(String police_vehicle) throws Statechart_exception {
-        _bCMS_state_machine.fires(_Police_vehicle_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "police_vehicles_dispatched_remove", new Object[]{police_vehicle});
-        _bCMS_state_machine.run_to_completion(_Police_vehicle_blocked);
+    public void police_vehicle_blocked(String police_vehicle_name) throws Statechart_exception {
+        PoliceVehicle police_vehicle = _entity_manager.find(PoliceVehicle.class, police_vehicle_name);
+
+        if (police_vehicle != null) {
+            _bCMS_state_machine.fires(_Police_vehicle_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "police_vehicles_dispatched_remove", new Object[]{police_vehicle_name});
+            _bCMS_state_machine.run_to_completion(_Police_vehicle_blocked);
+            
+            update_session_vehicle_status(police_vehicle, "Blocked");
+            create_event(_Police_vehicle_blocked);
+        }else{
+          throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");  
+        }
     }
 
     @Override
