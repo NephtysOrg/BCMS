@@ -6,14 +6,17 @@
 package service;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
-import javax.ejb.Remote;
+import java.util.ArrayList;
+import javax.ejb.Local;
+import persistence.BcmsSession;
+import persistence.Route;
 
 /**
  *
  * @author cfollet
  */
-@Remote
-public interface PoliceStationCoordinatorRemote {
+@Local
+public interface PoliceStationCoordinatorLocal {
 
     public void PSC_connection_request() throws Statechart_exception;
 
@@ -38,4 +41,15 @@ public interface PoliceStationCoordinatorRemote {
     public void crisis_is_more_severe() throws Statechart_exception;
 
     public void crisis_is_less_severe() throws Statechart_exception;
+    
+    public BcmsSession getCurrentSession();
+
+    public int getNumber_of_police_vehicle_required();
+
+    public ArrayList<String> getPolice_vehicles_dispatched();
+
+    public ArrayList<String> getPolice_vehicles_arrived();
+
+    public Route getLast_police_vehicle_route();
+    
 }

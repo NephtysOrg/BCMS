@@ -6,14 +6,18 @@
 package service;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
-import javax.ejb.Remote;
+import java.util.ArrayList;
+import javax.ejb.Asynchronous;
+import javax.ejb.Local;
+import persistence.BcmsSession;
+import persistence.Route;
 
 /**
  *
  * @author cfollet
  */
-@Remote
-public interface FireStationCoordinatorRemote {
+@Local
+public interface FireStationCoordinatorLocal {
 
     public void FSC_connection_request() throws Statechart_exception;
 
@@ -42,6 +46,23 @@ public interface FireStationCoordinatorRemote {
     public void fire_truck_blocked(String fire_truck) throws Statechart_exception;
 
     public void crisis_is_more_severe() throws Statechart_exception;
-    
+
     public void crisis_is_less_severe() throws Statechart_exception;
+
+    
+    @Asynchronous
+    public void create_scenario() throws Statechart_exception;
+
+    public BcmsSession getCurrentSession();
+
+    public int getNumber_of_fire_truck_required();
+
+    public ArrayList<String> getFire_trucks_dispatched();
+
+    public ArrayList<String> getFire_trucks_arrived();
+
+    public Route getLast_fire_truck_route();
+
+    public BcmsSession createSession();
+
 }

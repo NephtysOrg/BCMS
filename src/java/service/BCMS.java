@@ -9,17 +9,18 @@ import persistence.BcmsSession;
 import persistence.Route;
 import persistence.Event;
 import javax.ejb.Singleton;
-import javax.ejb.LocalBean;
 
 import com.pauware.pauware_engine._Core.*;
 import com.pauware.pauware_engine._Exception.*;
 import com.pauware.pauware_engine._Java_EE.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.Asynchronous;
 import javax.ejb.Startup;
 import javax.persistence.Query;
 import persistence.BcmsSessionFireTruck;
@@ -46,9 +47,8 @@ final class Timeout_log {
  * @author cfollet
  */
 @Singleton
-@LocalBean
 @Startup
-public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote, PoliceStationCoordinatorRemote {
+public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, PoliceStationCoordinatorLocal {
 
     private java.util.LinkedList<Timeout_log> _timeout_log;
     // SCXML DATAMODEL
@@ -400,7 +400,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
             _bCMS_state_machine.fires(_Close, _Completion_of_objectives, _End_of_crisis);
 
             _bCMS_state_machine.start();
-            create_scenario();
 
         } catch (Statechart_exception ex) {
             Logger.getLogger(BCMS.class.getName()).log(Level.SEVERE, null, ex);
@@ -421,30 +420,40 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
      *
      * @throws Statechart_exception
      */
-    private void create_scenario() throws Statechart_exception {
-        // Open a new BCMS session 
-        _session = new BcmsSession();
-        _entity_manager.persist(_session);
+    // @Schedule(hour="*", minute="*/1", second="0", persistent=false)
+    @Asynchronous
+    @Override
+    public void create_scenario() throws Statechart_exception {
+        try {
+            System.out.println("Starting scenario...");
 
-        // if no vehicles are in the database, create them
-        int police_vehicle_number = ((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue();
-        int fire_truck_number = ((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue();
-        if (police_vehicle_number + fire_truck_number == 0) {
-            create_vehicles(vehicles_number);
+            Thread.sleep(3000);
+            // if no vehicles are in the database, create them
+            int police_vehicle_number = ((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue();
+            int fire_truck_number = ((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue();
+            if (police_vehicle_number + fire_truck_number == 0) {
+                create_vehicles(vehicles_number);
+            }
+            Thread.sleep(3000);
+
+            // Set the vehicles avaliable for the session
+            state_fire_truck_number(((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
+            state_police_vehicle_number(((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue());
+            Thread.sleep(3000);
+            FSC_connection_request();
+            Thread.sleep(3000);
+            PSC_connection_request();
+            Thread.sleep(3000);
+            route_for_fire_trucks("Route 1");
+            route_for_police_vehicles("Route 2");
+            Thread.sleep(3000);
+            police_vehicle_dispatched("Police Vehicle 1");
+            Thread.sleep(3000);
+            police_vehicle_arrived("Police Vehicle 1");
+            System.out.println("Scenario done.");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BCMS.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        // Set the vehicles avaliable for the session
-        state_fire_truck_number(((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
-        state_police_vehicle_number(((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue());
-
-        FSC_connection_request();
-        PSC_connection_request();
-
-        route_for_fire_trucks("Route 1");
-        route_for_police_vehicles("Route 2");
-
-        police_vehicle_dispatched("Police Vehicle 1");
-        police_vehicle_arrived("Police Vehicle 1");
 
     }
 
@@ -478,6 +487,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         event.setSessionId(_session);
         event.setExecutionTrace(_bCMS_state_machine.current_state());
         _entity_manager.persist(event);
+        //listener.eventsChanged();
     }
 
     @PreDestroy
@@ -782,10 +792,10 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         if (fire_truck != null) {
             _bCMS_state_machine.fires(_Fire_truck_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "fire_trucks_dispatched_remove", new Object[]{fire_truck_name});
             _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
-            
+
             update_session_vehicle_status(fire_truck, "Blocked");
             create_event(_Fire_truck_blocked);
-        }else{
+        } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
 
@@ -811,11 +821,11 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
         if (police_vehicle != null) {
             _bCMS_state_machine.fires(_Police_vehicle_blocked, _Step_5_Arrival, _Crisis_details_exchange, true, this, "police_vehicles_dispatched_remove", new Object[]{police_vehicle_name});
             _bCMS_state_machine.run_to_completion(_Police_vehicle_blocked);
-            
+
             update_session_vehicle_status(police_vehicle, "Blocked");
             create_event(_Police_vehicle_blocked);
-        }else{
-          throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");  
+        } else {
+            throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
         }
     }
 
@@ -996,6 +1006,62 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorRemote,
 
     public boolean PV_arrived_greater_or_equal_to_PV_dispatched() {
         return _police_vehicles_dispatched.size() <= _police_vehicles_arrived.size();
+    }
+
+    //------------------//
+    // getter and setter//
+    //------------------//
+    @Override
+    public int getNumber_of_fire_truck_required() {
+        return _number_of_fire_truck_required;
+    }
+
+    @Override
+    public int getNumber_of_police_vehicle_required() {
+        return _number_of_police_vehicle_required;
+    }
+
+    @Override
+    public ArrayList<String> getFire_trucks_dispatched() {
+        return _fire_trucks_dispatched;
+    }
+
+    public ArrayList<String> getPolice_vehicles_dispatched() {
+        return _police_vehicles_dispatched;
+    }
+
+    @Override
+    public ArrayList<String> getFire_trucks_arrived() {
+        return _fire_trucks_arrived;
+    }
+
+    @Override
+    public ArrayList<String> getPolice_vehicles_arrived() {
+        return _police_vehicles_arrived;
+    }
+
+    @Override
+    public Route getLast_fire_truck_route() {
+        return _last_fire_truck_route;
+    }
+
+    @Override
+    public Route getLast_police_vehicle_route() {
+        return _last_police_vehicle_route;
+    }
+
+    @Override
+    public BcmsSession getCurrentSession() {
+        return _session;
+    }
+
+    @Override
+    public BcmsSession createSession() {
+        // Open a new BCMS session
+        _session = new BcmsSession();
+        _entity_manager.persist(_session);
+        
+        return getCurrentSession();
     }
 
 }
