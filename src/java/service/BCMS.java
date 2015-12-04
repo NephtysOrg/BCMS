@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.Asynchronous;
 import javax.ejb.Startup;
 import javax.persistence.Query;
 import persistence.BcmsSessionFireTruck;
@@ -155,6 +154,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
 
     protected BcmsSession _session;
     private static int vehicles_number = 5;
+
+    private boolean isFSCConnected = false;
+    private boolean isPSCConnected = false;
 
     private Route _last_fire_truck_route;
     private Route _last_police_vehicle_route;
@@ -420,21 +422,17 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
      *
      * @throws Statechart_exception
      */
-    // @Schedule(hour="*", minute="*/1", second="0", persistent=false)
-    @Asynchronous
     @Override
     public void create_scenario() throws Statechart_exception {
         try {
             System.out.println("Starting scenario...");
 
-            Thread.sleep(3000);
             // if no vehicles are in the database, create them
             int police_vehicle_number = ((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue();
             int fire_truck_number = ((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue();
             if (police_vehicle_number + fire_truck_number == 0) {
                 create_vehicles(vehicles_number);
             }
-            Thread.sleep(3000);
 
             // Set the vehicles avaliable for the session
             state_fire_truck_number(((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
@@ -487,7 +485,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         event.setSessionId(_session);
         event.setExecutionTrace(_bCMS_state_machine.current_state());
         _entity_manager.persist(event);
-        //listener.eventsChanged();
+        System.out.println("Event persisted : " + event.getEventName());
     }
 
     @PreDestroy
@@ -525,6 +523,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void FSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_connection_request);
+        createSession();
+        isFSCConnected = true;
         create_event(_FSC_connection_request);
 
         List<FireTruck> ftList = _entity_manager.createNamedQuery("FireTruck.findAll").getResultList();
@@ -668,8 +668,9 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void PSC_connection_request() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_PSC_connection_request);
+        createSession();
         create_event(_PSC_connection_request);
-
+        isPSCConnected = true;
         List<PoliceVehicle> pvList = _entity_manager.createNamedQuery("PoliceVehicle.findAll").getResultList();
         for (PoliceVehicle pv : pvList) {
             _bCMS_state_machine.run_to_completion(_Police_vehicle_dispatched);
@@ -1026,6 +1027,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         return _fire_trucks_dispatched;
     }
 
+    @Override
     public ArrayList<String> getPolice_vehicles_dispatched() {
         return _police_vehicles_dispatched;
     }
@@ -1057,11 +1059,22 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
 
     @Override
     public BcmsSession createSession() {
-        // Open a new BCMS session
-        _session = new BcmsSession();
-        _entity_manager.persist(_session);
-        
+
+        if (_session == null) {
+            System.out.println("Create Session");
+            _session = new BcmsSession();
+            _entity_manager.persist(_session);
+        }
+
         return getCurrentSession();
+    }
+
+    public boolean isIsFSCConnected() {
+        return isFSCConnected;
+    }
+
+    public boolean isIsPSCConnected() {
+        return isPSCConnected;
     }
 
 }

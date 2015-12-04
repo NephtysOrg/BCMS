@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition>
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Events</h3>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Table -->
+                        <h:form>
+                            <h:panelGroup id="events_list">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Label</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat  value="#{FSCBean.eventList}" var="evt">
+                                            <tr>
+                                                <td><h:outputText value="#{evt.eventName}"/></td>
+                                                <td><h:outputText value="#{evt.eventOccurrenceTime}"/></td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+                            <p:poll interval="1" update="events_list" />
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </ui:composition>
+    </h:body>
+</html>
+

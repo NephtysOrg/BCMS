@@ -41,7 +41,7 @@ public interface PoliceStationCoordinatorLocal {
     public void crisis_is_more_severe() throws Statechart_exception;
 
     public void crisis_is_less_severe() throws Statechart_exception;
-    
+
     public BcmsSession getCurrentSession();
 
     public int getNumber_of_police_vehicle_required();
@@ -51,5 +51,9 @@ public interface PoliceStationCoordinatorLocal {
     public ArrayList<String> getPolice_vehicles_arrived();
 
     public Route getLast_police_vehicle_route();
+    
+    public BcmsSession createSession();
+
+    public boolean isIsFSCConnected() ;
     
 }

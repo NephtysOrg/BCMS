@@ -1,20 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
-    <h:head>
-        <title>Test</title>
-    </h:head>
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <h2>BCMS</h2>
+        <ui:composition template="/template/layout.xhtml">
+
+            <ui:define name="header">
+                <h1>Barbados Crisis Management System</h1>
+            </ui:define>
 
 
-        <h:form>
-            <p:commandButton value="Start Scenario" actionListener="#{fSCBean.startScenario}" />
-            <h:outputText id="txt_count" value="#{fSCBean.eventList.size()}" />
-                <p:poll interval="3" update="txt_count" />
-        </h:form>
+            <ui:define name="content">
+                <div class="col-md-6 text-center">
+                    <a href="fsc.xhtml" class="btn btn-danger">Go to FSC</a>
+                </div>
+                <div class="col-md-6 text-center">
+                    <a href="psc.xhtml" class="btn btn-primary">Go to PSC</a>
+                </div>
+            </ui:define>
+        </ui:composition>
     </h:body>
 </html>

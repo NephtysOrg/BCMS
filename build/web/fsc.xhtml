@@ -1,0 +1,80 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+
+
+        <ui:composition template="/template/console_layout.xhtml">
+            <ui:define name="header">
+                <h1>Fire Station Coordinator</h1>
+            </ui:define>
+
+
+            <ui:define name="content">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Fire Trucks</h3>
+                            </div>
+                            <div class="panel-body">
+                                <ul class="list-group">
+                                    <h:form>
+                                        <h:panelGroup id="firetrucks">
+                                            <ui:repeat  value="#{FSCBean.sessionFireTrucks}" var="ft">
+                                                <li class="list-group-item">
+                                                    <h:outputText value="#{ft.fireTruckName.fireTruckName}"/>
+                                                    <span class="label label-info right">
+                                                        <h:outputText value="#{ft.fireTruckStatus}"/>
+                                                    </span>
+                                                </li>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        <p:poll interval="3" update="firetrucks" />
+                                    </h:form>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Commandes</h3>
+                            </div>
+                            <div class="panel-body">
+                                <h:form>
+                                    <h:commandButton styleClass="btn btn-default" action="#{FSCBean.connect()}" value="Connection"/>
+                                    <button type="button" class="btn btn-default">Middle</button>
+                                    <button type="button" class="btn btn-default">Right</button>
+                                </h:form>
+                            </div>
+                        </div>
+                        <!-- Table -->
+                        <h:form>
+                            <h:panelGroup id="events_list">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Label</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat  value="#{FSCBean.eventList}" var="evt">
+                                            <tr>
+                                                <td><h:outputText value="#{evt.eventName}"/></td>
+                                                <td><h:outputText value="#{evt.eventOccurrenceTime}"/></td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+                            <p:poll interval="1" update="events_list" />
+                        </h:form>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

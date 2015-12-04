@@ -49,7 +49,6 @@ public interface FireStationCoordinatorLocal {
 
     public void crisis_is_less_severe() throws Statechart_exception;
 
-    
     @Asynchronous
     public void create_scenario() throws Statechart_exception;
 
@@ -64,5 +63,7 @@ public interface FireStationCoordinatorLocal {
     public Route getLast_fire_truck_route();
 
     public BcmsSession createSession();
+    
+     public boolean isIsPSCConnected() ;
 
 }

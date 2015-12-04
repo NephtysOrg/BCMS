@@ -7,38 +7,37 @@ package view;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.bean.SessionScoped;
 import persistence.BcmsSession;
+import persistence.BcmsSessionFireTruck;
 import persistence.Event;
+import service.FSCManagerLocal;
 import service.FireStationCoordinatorLocal;
 
 /**
  *
  * @author cfollet
  */
-@ManagedBean
-@ViewScoped
+@SessionScoped
+@ManagedBean(name = "FSCBean")
 public class FSCBean implements Serializable {
 
     @EJB
     private FireStationCoordinatorLocal _fsc;
+    @EJB
+    private FSCManagerLocal _fscManager;
 
     private BcmsSession _currentSession;
 
     @javax.persistence.PersistenceContext(name = "CrisisPU")
     private javax.persistence.EntityManager _entity_manager;
 
-    /**
-     * Creates a new instance of BCMS
-     */
     public FSCBean() {
     }
 
@@ -46,34 +45,23 @@ public class FSCBean implements Serializable {
     public void onCreate() {
         assert (_fsc != null);
     }
-
-
-
-    public BcmsSession getCurrentCrysis() {
-        return _fsc.getCurrentSession();
-    }
-
-    @Asynchronous
-    public void startScenario() {
+    
+    public void connect(){
+        System.out.println("connect");
         try {
-            System.out.println("->Managed Bean.StartScenario()");
-            _currentSession = _fsc.createSession();
-            _fsc.create_scenario();
-            System.out.println("<-Managed Bean.StartScenario()");
+            _fsc.FSC_connection_request();
+            _currentSession = _fsc.getCurrentSession();
         } catch (Statechart_exception ex) {
             Logger.getLogger(FSCBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    public List<BcmsSessionFireTruck> getSessionFireTrucks() {
+        return _fscManager.getSessionFireTrucks(_currentSession);
+    }
+
     public List<Event> getEventList() {
-        System.out.println("->getEventList()");
-
-        List<Event> eventList = new ArrayList<>();
-        eventList = _entity_manager.createNamedQuery("Event.findBySessionId").setParameter("sessionId", _currentSession).getResultList();
-
-        System.out.println("Size :" + eventList.size());
-        System.out.println("<-getEventList()");
-        return eventList;
+        return _fscManager.getEvents(_currentSession);
     }
 
 }
