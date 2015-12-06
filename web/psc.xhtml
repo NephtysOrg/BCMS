@@ -8,73 +8,59 @@
     <h:body>
 
 
-        <ui:composition template="/template/console_layout.xhtml">
+        <ui:composition template="/template/layout.xhtml">
             <ui:define name="header">
+                <ol class="breadcrumb">
+                    <li><a href="./index.xhtml">Index</a></li>
+                    <li class="active">PSC</li>
+                </ol>
                 <h1>Police Station Coordinator</h1>
             </ui:define>
 
 
             <ui:define name="content">
-                <div class="col-md-3">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Police Vehicle <span class="label label-info pull-right">#{PSCBean.sessionPoliceVehicle.size()}</span></h3>
-                            
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Police Vehicle <span class="label label-info pull-right">#{PSCBean.sessionPoliceVehicles.size()}</span></h3>
+
+                            </div>
+                            <div class="panel-body">
+                                <ul class="list-group">
+                                    <h:form>
+                                        <h:panelGroup id="policevehicles">
+                                            <ui:repeat  value="#{PSCBean.sessionPoliceVehicles}" var="pv">
+                                                <li class="list-group-item">
+                                                    <h:outputText value="#{pv.policeVehicleName.policeVehicleName}"/>
+                                                    <span class="label label-info pull-right">
+                                                        <h:outputText value="#{pv.policeVehicleStatus}"/>
+                                                    </span>
+                                                </li>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        <p:poll interval="3" update="policevehicles" />
+                                    </h:form>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="panel-body">
-                            <ul class="list-group">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Commandes</h3>
+                            </div>
+                            <div class="panel-body">
                                 <h:form>
-                                    <h:panelGroup id="policevehicles">
-                                        <ui:repeat  value="#{PSCBean.sessionPoliceVehicle}" var="pv">
-                                            <li class="list-group-item">
-                                                <h:outputText value="#{pv.policeVehicleName.policeVehicleName}"/>
-                                                <span class="label label-info pull-right">
-                                                    <h:outputText value="#{pv.policeVehicleStatus}"/>
-                                                </span>
-                                            </li>
-                                        </ui:repeat>
-                                    </h:panelGroup>
-                                    <p:poll interval="3" update="policevehicles" />
+                                    <h:commandButton styleClass="btn btn-default" action="#{PSCBean.connect()}" value="Connection"/>
+
+                                    <button type="button" class="btn btn-default">Middle</button>
+                                    <button type="button" class="btn btn-default">Right</button>
                                 </h:form>
-                            </ul>
+                            </div>
                         </div>
+                        <ui:include src="/template/events.xhtml" /> 
                     </div>
-                </div>
-                <div class="col-md-9">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Commandes</h3>
-                        </div>
-                        <div class="panel-body">
-                            <h:form>
-                                <h:commandButton styleClass="btn btn-default" action="#{PSCBean.connect()}" value="Connection"/>
-                                
-                                <button type="button" class="btn btn-default">Middle</button>
-                                <button type="button" class="btn btn-default">Right</button>
-                            </h:form>
-                        </div>
-                    </div>
-                    <h:form>
-                        <h:panelGroup id="events_list">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Label</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <ui:repeat  value="#{PSCBean.eventList}" var="evt">
-                                        <tr>
-                                            <td><h:outputText value="#{evt.eventName}"/></td>
-                                            <td><h:outputText value="#{evt.eventOccurrenceTime}"/></td>
-                                        </tr>
-                                    </ui:repeat>
-                                </tbody>
-                            </table>
-                        </h:panelGroup>
-                        <p:poll interval="1" update="events_list" />
-                    </h:form>
                 </div>
             </ui:define>
         </ui:composition>

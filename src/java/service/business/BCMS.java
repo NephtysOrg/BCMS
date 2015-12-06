@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package service;
+package service.business;
 
 import persistence.BcmsSession;
 import persistence.Route;
@@ -47,7 +47,7 @@ final class Timeout_log {
  */
 @Singleton
 @Startup
-public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, PoliceStationCoordinatorLocal {
+public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, PoliceStationCoordinatorLocal, AllCoordinatorLocal {
 
     private java.util.LinkedList<Timeout_log> _timeout_log;
     // SCXML DATAMODEL

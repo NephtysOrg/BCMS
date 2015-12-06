@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package service;
+package service.business;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public interface FireStationCoordinatorLocal {
     public Route getLast_fire_truck_route();
 
     public BcmsSession createSession();
-    
-     public boolean isIsPSCConnected() ;
+
+    public boolean isIsPSCConnected();
 
 }

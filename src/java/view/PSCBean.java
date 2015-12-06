@@ -12,25 +12,25 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.RequestScoped;
 import javax.faces.bean.SessionScoped;
 import persistence.BcmsSession;
-import persistence.BcmsSessionFireTruck;
 import persistence.BcmsSessionPoliceVehicle;
 import persistence.Event;
-import service.PSCManagerLocal;
-import service.PoliceStationCoordinatorLocal;
+import service.managers.PSCManagerLocal;
+import service.business.PoliceStationCoordinatorLocal;
 
 /**
  *
  * @author cfollet
  */
 @ManagedBean(name = "PSCBean")
-@SessionScoped
+@RequestScoped
 public class PSCBean {
 
     @EJB
     private PoliceStationCoordinatorLocal _psc;
-    
+
     @EJB
     private PSCManagerLocal _pscManager;
 
@@ -46,10 +46,10 @@ public class PSCBean {
     @PostConstruct
     public void onCreate() {
         assert (_psc != null);
+        _currentSession = _psc.getCurrentSession();
     }
 
     public void connect() {
-        System.out.println("connect");
         try {
             _psc.PSC_connection_request();
             _currentSession = _psc.getCurrentSession();
@@ -57,15 +57,9 @@ public class PSCBean {
             Logger.getLogger(FSCBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    
-    public List<BcmsSessionPoliceVehicle> getSessionPoliceVehicle() {
-        return _pscManager.getSessionPoliceVehicle(_currentSession);
-    }
 
-    public List<Event> getEventList() {
-        return _pscManager.getEvents(_currentSession);
+    public List<BcmsSessionPoliceVehicle> getSessionPoliceVehicles() {
+        return _pscManager.getSessionPoliceVehicles(_currentSession);
     }
-
 
 }

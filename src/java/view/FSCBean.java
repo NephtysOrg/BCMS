@@ -13,18 +13,17 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.RequestScoped;
 import persistence.BcmsSession;
 import persistence.BcmsSessionFireTruck;
-import persistence.Event;
-import service.FSCManagerLocal;
-import service.FireStationCoordinatorLocal;
+import service.managers.FSCManagerLocal;
+import service.business.FireStationCoordinatorLocal;
 
 /**
  *
  * @author cfollet
  */
-@SessionScoped
+@RequestScoped
 @ManagedBean(name = "FSCBean")
 public class FSCBean implements Serializable {
 
@@ -35,19 +34,16 @@ public class FSCBean implements Serializable {
 
     private BcmsSession _currentSession;
 
-    @javax.persistence.PersistenceContext(name = "CrisisPU")
-    private javax.persistence.EntityManager _entity_manager;
-
     public FSCBean() {
     }
 
     @PostConstruct
     public void onCreate() {
         assert (_fsc != null);
+        _currentSession = _fsc.getCurrentSession();
     }
     
     public void connect(){
-        System.out.println("connect");
         try {
             _fsc.FSC_connection_request();
             _currentSession = _fsc.getCurrentSession();
@@ -58,10 +54,6 @@ public class FSCBean implements Serializable {
 
     public List<BcmsSessionFireTruck> getSessionFireTrucks() {
         return _fscManager.getSessionFireTrucks(_currentSession);
-    }
-
-    public List<Event> getEventList() {
-        return _fscManager.getEvents(_currentSession);
     }
 
 }

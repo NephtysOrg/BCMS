@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package service;
+package service.managers;
 
 import java.util.List;
 import javax.ejb.Stateless;
@@ -28,17 +28,5 @@ public class FSCManager implements FSCManagerLocal {
         Query q = _entity_manager.createNamedQuery("BcmsSessionFireTruck.findByBcmsSessionId").setParameter("bcmsSessionId", session);
         return (List<BcmsSessionFireTruck>) q.getResultList();
     }
-
-    @Override
-    public List<Route> getRoutes() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Event> getEvents(BcmsSession session) {
-        Query q = _entity_manager.createNamedQuery("Event.findBySessionId").setParameter("sessionId", session);
-        return (List<Event>) q.getResultList();
-    }
-    
     
 }

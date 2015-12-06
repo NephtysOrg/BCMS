@@ -1,0 +1,40 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+
+
+        <ui:composition template="/template/layout.xhtml">
+            <ui:define name="header">
+                <ol class="breadcrumb">
+                    <li><a href="./index.xhtml">Index</a></li>
+                    <li class="active">Records</li>
+                </ol>
+                <h1>Records</h1>
+            </ui:define>
+
+
+            <ui:define name="content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="nav nav-pills nav-stacked col-md-3">
+                            <ui:repeat  value="#{BCMSBean.sessions}" var="s">
+                                <li><a href="##{s.sessionId}" data-toggle="tab">Session #{s.sessionId}</a></li>
+                            </ui:repeat>
+                        </ul>
+                        <div class="tab-content col-md-9">
+                            <ui:repeat  value="#{BCMSBean.sessions}" var="s">
+                                <div class="tab-pane" id="#{s.sessionId}">
+                                    <ui:include src="/template/events.xhtml" >
+                                        <ui:param name="s" value="${s}"/>
+                                    </ui:include>  
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

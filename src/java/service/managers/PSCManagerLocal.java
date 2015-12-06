@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package service;
+package service.managers;
 
 import java.util.List;
 import javax.ejb.Local;
@@ -19,9 +19,5 @@ import persistence.Route;
 @Local
 public interface PSCManagerLocal {
 
-    public List<BcmsSessionPoliceVehicle> getSessionPoliceVehicle(final BcmsSession session);
-
-    public List<Route> getRoutes();
-
-    public List<Event> getEvents(BcmsSession session);
+    public List<BcmsSessionPoliceVehicle> getSessionPoliceVehicles(final BcmsSession session);
 }
