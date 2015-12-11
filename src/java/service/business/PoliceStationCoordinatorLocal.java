@@ -1,16 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package service.business;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
-import java.util.ArrayList;
 import javax.ejb.Local;
 import persistence.BcmsSession;
-import persistence.Route;
-
 /**
  *
  * @author cfollet
@@ -43,17 +35,5 @@ public interface PoliceStationCoordinatorLocal {
     public void crisis_is_less_severe() throws Statechart_exception;
 
     public BcmsSession getCurrentSession();
-
-    public int getNumber_of_police_vehicle_required();
-
-    public ArrayList<String> getPolice_vehicles_dispatched();
-
-    public ArrayList<String> getPolice_vehicles_arrived();
-
-    public Route getLast_police_vehicle_route();
-    
-    public BcmsSession createSession();
-
-    public boolean isIsFSCConnected() ;
     
 }

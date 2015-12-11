@@ -38,8 +38,8 @@ public class BCMSManager implements BCMSManagerLocal {
 
     @Override
     public List<Route> getRoutes() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+         Query q = _entity_manager.createNamedQuery("Route.findAll");
+        return (List<Route>) q.getResultList();}
 
     @Override
     public List<BcmsSession> getSessions() {

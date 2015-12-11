@@ -11,7 +11,13 @@
                     <li><a href="./index.xhtml">Index</a></li>
                     <li class="active">Records</li>
                 </ol>
-                <h1>Records</h1>
+                <h:form>
+                    <h1>Records
+                        <h:commandLink styleClass="btn btn-danger" action="#{BCMSBean.reset_database()}">
+                            <span class="fa fa-trash-o"></span> Delete all records
+                        </h:commandLink>
+                    </h1>
+                </h:form>
             </ui:define>
 
 

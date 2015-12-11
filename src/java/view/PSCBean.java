@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package view;
 
 import com.pauware.pauware_engine._Exception.Statechart_exception;
@@ -13,14 +8,12 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
-import javax.faces.bean.SessionScoped;
-import persistence.BcmsSession;
 import persistence.BcmsSessionPoliceVehicle;
-import persistence.Event;
 import service.managers.PSCManagerLocal;
 import service.business.PoliceStationCoordinatorLocal;
 
 /**
+ * Managed bean used by the cops.
  *
  * @author cfollet
  */
@@ -34,32 +27,96 @@ public class PSCBean {
     @EJB
     private PSCManagerLocal _pscManager;
 
-    private BcmsSession _currentSession;
-
-    /**
-     * Creates a new instance of PSCBean
-     */
-    public PSCBean() {
-
-    }
-
     @PostConstruct
     public void onCreate() {
         assert (_psc != null);
-        _currentSession = _psc.getCurrentSession();
     }
 
-    public void connect() {
+    /**
+     * See BCMS.PSC_connection_request
+     */
+    public void PSC_connection_request() {
         try {
             _psc.PSC_connection_request();
-            _currentSession = _psc.getCurrentSession();
         } catch (Statechart_exception ex) {
             Logger.getLogger(FSCBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    public void route_for_police_vehicles(String route_name) {
+        try {
+            if (_psc.getCurrentSession() != null) {
+                _psc.route_for_police_vehicles(route_name);
+            }
+        } catch (Statechart_exception ex) {
+            Logger.getLogger(PSCBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void police_vehicle_dispatched(String police_vehicle) {
+        try {
+            if (_psc.getCurrentSession() != null) {
+                _psc.police_vehicle_dispatched(police_vehicle);
+            }
+        } catch (Statechart_exception ex) {
+            Logger.getLogger(PSCBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void police_vehicle_arrived(String police_vehicle) {
+        try {
+            if (_psc.getCurrentSession() != null) {
+                _psc.police_vehicle_arrived(police_vehicle);
+            }
+        } catch (Statechart_exception ex) {
+            Logger.getLogger(PSCBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void police_vehicle_breakdown(String police_vehicle,/* may be 'null' */ String replacement_police_vehicle) {
+        try {
+            if (_psc.getCurrentSession() != null) {
+                _psc.police_vehicle_breakdown(police_vehicle, replacement_police_vehicle);
+            }
+        } catch (Statechart_exception ex) {
+            Logger.getLogger(PSCBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void police_vehicle_blocked(String police_vehicle) {
+        try {
+            if (_psc.getCurrentSession() != null) {
+                _psc.police_vehicle_blocked(police_vehicle);
+            }
+        } catch (Statechart_exception ex) {
+            Logger.getLogger(PSCBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This function take a police vehicle and try to find an other one in order
+     * to replace it due to a breakdown
+     *
+     * @param broken_pv
+     * @return new pv name
+     */
+    public String getReplacementVehicle(BcmsSessionPoliceVehicle broken_pv) {
+        List<BcmsSessionPoliceVehicle> candidates = getSessionPoliceVehicles();
+        for (BcmsSessionPoliceVehicle candidate : candidates) {
+            if (!broken_pv.equals(candidate) && candidate.getPoliceVehicleStatus().equals("Idle")) {
+                return candidate.getPoliceVehicleName().getPoliceVehicleName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Used to display all police vehicles in the UI.
+     *
+     * @return
+     */
     public List<BcmsSessionPoliceVehicle> getSessionPoliceVehicles() {
-        return _pscManager.getSessionPoliceVehicles(_currentSession);
+        return _pscManager.getSessionPoliceVehicles(_psc.getCurrentSession());
     }
 
 }

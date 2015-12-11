@@ -28,8 +28,9 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "BCMS_SESSION")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "BcmsSession.findAll", query = "SELECT b FROM BcmsSession b"),
+    @NamedQuery(name = "BcmsSession.findAll", query = "SELECT b FROM BcmsSession b ORDER BY b.sessionId DESC"),
     @NamedQuery(name = "BcmsSession.findBySessionId", query = "SELECT b FROM BcmsSession b WHERE b.sessionId = :sessionId"),
+    @NamedQuery(name = "BcmsSession.deleteAllOthersSessions", query = "DELETE FROM BcmsSession b WHERE b.sessionId != :sessionId"),
     @NamedQuery(name = "BcmsSession.findByFireTruckNumber", query = "SELECT b FROM BcmsSession b WHERE b.fireTruckNumber = :fireTruckNumber"),
     @NamedQuery(name = "BcmsSession.findByPoliceTruckNumber", query = "SELECT b FROM BcmsSession b WHERE b.policeTruckNumber = :policeTruckNumber")})
 public class BcmsSession implements Serializable {

@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "BcmsSessionFireTruck.findAll", query = "SELECT b FROM BcmsSessionFireTruck b"),
-    @NamedQuery(name = "BcmsSessionFireTruck.findByBcmsSessionId", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.sessionId = :bcmsSessionId"),
+    @NamedQuery(name = "BcmsSessionFireTruck.findByBcmsSessionId", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.sessionId = :bcmsSessionId ORDER BY b.fireTruckName.fireTruckName ASC"),
     @NamedQuery(name = "BcmsSessionFireTruck.findByBcmsSessionFireTruckId", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.bcmsSessionFireTruckId = :bcmsSessionFireTruckId"),
     @NamedQuery(name = "BcmsSessionFireTruck.findByFireTruckNameAndSessionName", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.fireTruckName = :fireTruckName and b.sessionId = :sessionId"),
     @NamedQuery(name = "BcmsSessionFireTruck.findByFireTruckStatus", query = "SELECT b FROM BcmsSessionFireTruck b WHERE b.fireTruckStatus = :fireTruckStatus")})

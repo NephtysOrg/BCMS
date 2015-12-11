@@ -20,42 +20,80 @@
                     <div class="col-md-3">
                         <div class="panel panel-default">
                             <div class="panel-heading">
+                                <h3 class="panel-title">Commands</h3>
+                            </div>
+                            <div class="panel-body">
+                                <h:form>
+                                    <div class="btn-group-vertical">
+                                        <h:commandLink styleClass="btn  btn-block btn-success" action="#{FSCBean.FSC_connection_request()}">
+                                            <span class="fa fa-check"></span> Connection
+                                        </h:commandLink>
+                                        <span class="dropdown">
+                                            <button class="btn  btn-block btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                Routes
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                                <ui:repeat  value="#{BCMSBean.routes}" var="route">
+                                                    <li><h:commandLink action="#{FSCBean.route_for_fire_trucks(route.routeName)}" value="#{route.routeName}"/></li>
+                                                </ui:repeat>
+                                                <li role="separator" class="divider"></li>
+                                                <li><h:commandLink action="#{FSCBean.FSC_agrees_about_fire_truck_route()}" value="Agree about FT route"/></li>
+                                                <li><h:commandLink action="#{FSCBean.FSC_disagrees_about_police_vehicle_route()}" value="Disagree about FT route"/></li>
+                                                <li><h:commandLink action="#{FSCBean.FSC_agrees_about_police_vehicle_route()}" value="Agree about PV route"/></li>
+                                                <li><h:commandLink action="#{FSCBean.FSC_disagrees_about_police_vehicle_route()}" value="Disagree about PV route"/></li>
+                                            </ul>
+                                        </span> 
+                                        <h:commandLink styleClass="btn  btn-block btn-danger" action="#{BCMSBean.stop_and_clear()}">
+                                            <span class="fa fa-close"></span> Stop and Clear
+                                        </h:commandLink>
+                                    </div>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <ui:include src="/template/events.xhtml" />
+                    </div>
+                    <div class="col-md-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
                                 <h3 class="panel-title">Fire Trucks <span class="label label-info pull-right">#{FSCBean.sessionFireTrucks.size()}</span></h3>
                             </div>
                             <div class="panel-body">
                                 <ul class="list-group">
                                     <h:form>
                                         <h:panelGroup id="firetrucks">
-                                            <ui:repeat  value="#{FSCBean.sessionFireTrucks}" var="ft">
+                                            <ui:repeat value="#{FSCBean.sessionFireTrucks}" var="ft">
                                                 <li class="list-group-item">
                                                     <h:outputText value="#{ft.fireTruckName.fireTruckName}"/>
                                                     <span class="label label-info pull-right">
                                                         <h:outputText value="#{ft.fireTruckStatus}"/>
                                                     </span>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                            Actions
+                                                            <span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                                            <li><h:commandLink action="#{FSCBean.fire_truck_dispatched(ft.fireTruckName.fireTruckName)}" value="Dispatch"/></li>
+                                                            <li><h:commandLink action="#{FSCBean.fire_truck_arrived(ft.fireTruckName.fireTruckName)}" value="Arrive"/></li>
+                                                            <li><h:commandLink action="#{FSCBean.fire_truck_blocked(ft.fireTruckName.fireTruckName)}" value="Blocked"/></li>
+                                                            <li><h:commandLink action="#{FSCBean.fire_truck_breakdown(ft.fireTruckName.fireTruckName, null)}" value="Breakdown"/></li>
+                                                            <li><h:commandLink action="#{FSCBean.fire_truck_breakdown(ft.fireTruckName.fireTruckName,FSCBean.getReplacementTruck(ft))}" value="Breakdown (try to replace)"/></li>
+                                                        </ul>
+                                                    </div>
                                                 </li>
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        <p:poll interval="3" update="firetrucks" />
+                                        <p:poll interval="5" update="firetrucks" />
                                     </h:form>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Commandes</h3>
-                            </div>
-                            <div class="panel-body">
-                                <h:form>
-                                    <h:commandButton styleClass="btn btn-default" action="#{FSCBean.connect()}" value="Connection"/>
-                                    <button type="button" class="btn btn-default">Middle</button>
-                                    <button type="button" class="btn btn-default">Right</button>
-                                </h:form>
-                            </div>
-                        </div>
-                        <ui:include src="/template/events.xhtml" />  
-                    </div>
+
                 </div>
             </ui:define>
         </ui:composition>

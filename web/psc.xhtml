@@ -18,51 +18,81 @@
             </ui:define>
 
 
-            <ui:define name="content">
+           <ui:define name="content">
                 <div class="row">
                     <div class="col-md-3">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Police Vehicle <span class="label label-info pull-right">#{PSCBean.sessionPoliceVehicles.size()}</span></h3>
+                                <h3 class="panel-title">Commands</h3>
+                            </div>
+                            <div class="panel-body">
+                                <h:form>
+                                    <div class="btn-group-vertical">
+                                        <h:commandLink styleClass="btn  btn-block btn-success" action="#{PSCBean.PSC_connection_request()}">
+                                            <span class="fa fa-check"></span> Connection
+                                        </h:commandLink>
+                                        <span class="dropdown">
+                                            <button class="btn  btn-block btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                Routes
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                                                <ui:repeat  value="#{BCMSBean.routes}" var="route">
+                                                    <li><h:commandLink action="#{PSCBean.route_for_police_vehicles(route.routeName)}" value="#{route.routeName}"/></li>
+                                                </ui:repeat>
+                                            </ul>
+                                        </span> 
+                                        <h:commandLink styleClass="btn  btn-block btn-danger" action="#{BCMSBean.stop_and_clear()}">
+                                            <span class="fa fa-close"></span> Stop and Clear
+                                        </h:commandLink>
+                                    </div>
+                                </h:form>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="col-md-6">
+                        <ui:include src="/template/events.xhtml" />
+                    </div>
+                    <div class="col-md-3">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Police Vehicles <span class="label label-info pull-right">#{PSCBean.sessionPoliceVehicles.size()}</span></h3>
                             </div>
                             <div class="panel-body">
                                 <ul class="list-group">
                                     <h:form>
                                         <h:panelGroup id="policevehicles">
-                                            <ui:repeat  value="#{PSCBean.sessionPoliceVehicles}" var="pv">
+                                            <ui:repeat value="#{PSCBean.sessionPoliceVehicles}" var="pv">
                                                 <li class="list-group-item">
                                                     <h:outputText value="#{pv.policeVehicleName.policeVehicleName}"/>
                                                     <span class="label label-info pull-right">
                                                         <h:outputText value="#{pv.policeVehicleStatus}"/>
                                                     </span>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                            Actions
+                                                            <span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                                            <li><h:commandLink action="#{PSCBean.police_vehicle_dispatched(pv.policeVehicleName.policeVehicleName)}" value="Dispatch"/></li>
+                                                            <li><h:commandLink action="#{PSCBean.police_vehicle_arrived(pv.policeVehicleName.policeVehicleName)}" value="Arrive"/></li>
+                                                            <li><h:commandLink action="#{PSCBean.police_vehicle_blocked(pv.policeVehicleName.policeVehicleName)}" value="Blocked"/></li>
+                                                            <li><h:commandLink action="#{PSCBean.police_vehicle_breakdown(pv.policeVehicleName.policeVehicleName, null)}" value="Breakdown"/></li>
+                                                            <li><h:commandLink action="#{PSCBean.police_vehicle_breakdown(pv.policeVehicleName.policeVehicleName,PSCBean.getReplacementVehicle(pv))}" value="Breakdown (try to replace)"/></li>
+                                                        </ul>
+                                                    </div>
                                                 </li>
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        <p:poll interval="3" update="policevehicles" />
+                                        <p:poll interval="5" update="policevehicles" />
                                     </h:form>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Commandes</h3>
-                            </div>
-                            <div class="panel-body">
-                                <h:form>
-                                    <h:commandButton styleClass="btn btn-default" action="#{PSCBean.connect()}" value="Connection"/>
 
-                                    <button type="button" class="btn btn-default">Middle</button>
-                                    <button type="button" class="btn btn-default">Right</button>
-                                </h:form>
-                            </div>
-                        </div>
-                        <ui:include src="/template/events.xhtml" /> 
-                    </div>
                 </div>
-            </ui:define>
-        </ui:composition>
+            </ui:define> </ui:composition>
     </h:body>
 </html>

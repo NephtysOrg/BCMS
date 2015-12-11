@@ -118,10 +118,17 @@ public class Event implements Serializable {
             return false;
         }
         Event other = (Event) object;
-        if ((this.eventId == null && other.eventId != null) || (this.eventId != null && !this.eventId.equals(other.eventId))) {
+        System.out.println("Comparing "+ this.eventName +" and "+ other.getEventName());
+        if (this.eventId == null && other.eventId != null) {
+            System.out.println("False");
             return false;
         }
-        return true;
+        if ((this.eventId.equals(other.eventId) ) || ((this.eventName.equals(other.eventName)) && (this.sessionId.equals(other.sessionId)) )) {
+            System.out.println("True");
+            return true;
+        }
+        System.out.println("False");
+        return false;
     }
 
     @Override

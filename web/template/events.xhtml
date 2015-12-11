@@ -17,6 +17,7 @@
 
                             <p:column headerText="Label">
                                 <h:outputText value="#{event.eventName}" />
+                                <span data-toggle="tooltip" data-placement="top" title="#{event.executionTrace}"><i class="fa fa-info-circle"></i></span>
                             </p:column>
 
                             <p:column headerText="Date">
@@ -24,7 +25,7 @@
                             </p:column>
                         </p:dataTable>
 
-                        <p:poll interval="5" update="@(.updatable_table)" />
+                        <p:poll interval="2" update="@(.updatable_table)" />
                     </h:form>
                 </div>
             </div>

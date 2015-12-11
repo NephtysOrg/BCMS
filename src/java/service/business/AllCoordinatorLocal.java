@@ -5,6 +5,7 @@
  */
 package service.business;
 
+import com.pauware.pauware_engine._Exception.Statechart_exception;
 import javax.ejb.Local;
 import persistence.BcmsSession;
 
@@ -16,4 +17,8 @@ import persistence.BcmsSession;
 public interface AllCoordinatorLocal {
 
     public BcmsSession getCurrentSession();
+    
+    public void stop_and_clear() throws Statechart_exception;
+    
+    public void reset_database();
 }
