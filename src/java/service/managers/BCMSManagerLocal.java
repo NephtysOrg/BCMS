@@ -17,6 +17,8 @@ import persistence.Route;
  */
 @Local
 public interface BCMSManagerLocal {
+    
+    public void createEvent(Event e);
     public List<Event> getEvents(final BcmsSession session);
     public List<BcmsSession> getSessions();
     public List<Event> getEvents();

@@ -20,12 +20,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.EJB;
 import javax.ejb.Startup;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.Query;
 import persistence.BcmsSessionFireTruck;
 import persistence.BcmsSessionPoliceVehicle;
 import persistence.FireTruck;
 import persistence.PoliceVehicle;
+import service.managers.BCMSManagerLocal;
 
 final class Timeout_log {
 
@@ -154,13 +158,18 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
 
     protected BcmsSession _session;
     private static int vehicles_number = 5;
-    private List<Event> _occured_events;
+
+    private boolean _isFSCConnected = false;
+    private boolean _isPSCConnected = false;
 
     private Route _last_fire_truck_route;
     private Route _last_police_vehicle_route;
 
     @javax.persistence.PersistenceContext(name = "CrisisPU")
     private javax.persistence.EntityManager _entity_manager;
+
+    @EJB
+    private BCMSManagerLocal _bcmsManager;
 
     public BCMS() throws Statechart_exception {
         init_structure();
@@ -170,7 +179,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     // Statechart initialization:
     private void init_structure() throws Statechart_exception {
         _timeout_log = new java.util.LinkedList();
-        _occured_events = new ArrayList<>();
     }
 
     private void init_behavior() throws Statechart_exception {
@@ -416,7 +424,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         }
     }
 
-
     private void update_session_vehicle_status(Object vehicle, String status) {
         if (vehicle instanceof FireTruck) {
             FireTruck ft = (FireTruck) vehicle;
@@ -440,6 +447,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
      *
      * @param name event name
      */
+    // todo move business into BCMSmanager
     private void create_event(String name) {
         Event event = new Event();
         event.setEventName(name);
@@ -447,8 +455,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         event.setSessionId(_session);
         event.setExecutionTrace(_bCMS_state_machine.current_state());
         _entity_manager.persist(event);
-        _occured_events.add(event);
-        System.out.println("Event persisted : " + event.getEventName());
+
     }
 
     @PreDestroy
@@ -465,7 +472,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         _number_of_police_vehicle_required = 0;
         _session = null;
 
-        _occured_events.clear();
+        _isFSCConnected = false;
+        _isPSCConnected = false;
         _fire_trucks_dispatched.clear();
         _police_vehicles_dispatched.clear();
         _fire_trucks_arrived.clear();
@@ -488,16 +496,14 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
      */
     @Override
     public void FSC_connection_request() throws Statechart_exception {
-        Event tmp = new Event();
-        tmp.setEventId(0);
-        tmp.setEventName(_FSC_connection_request);
-        tmp.setSessionId(_session);
+
         // If the connection hasn't been done yet
-        if (!_occured_events.contains(tmp)) {
+        if (!_isFSCConnected) {
 
             _bCMS_state_machine.run_to_completion(_FSC_connection_request);
             createSession();
-            create_event(_FSC_connection_request);
+            _bcmsManager.createEvent(new Event(_FSC_connection_request, _bCMS_state_machine.current_state(), getCurrentSession()));
+            _isFSCConnected = true;
 
             List<FireTruck> ftList = _entity_manager.createNamedQuery("FireTruck.findAll").getResultList();
             for (FireTruck ft : ftList) {
@@ -509,6 +515,12 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
                 session_ft.setFireTruckStatus("Idle");
                 _entity_manager.persist(session_ft);
             }
+
+        }
+
+        // If both connected, we can initialize the number of vehicle requested
+        if (_isFSCConnected && _isPSCConnected) {
+            state_police_vehicle_number(((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue());
             state_fire_truck_number(((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
 
         }
@@ -528,7 +540,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
 
         _session.setFireTruckNumber(number_of_fire_truck_required);
         _entity_manager.merge(_session);
-        create_event(_State_fire_truck_number);
+        _bcmsManager.createEvent(new Event(_State_fire_truck_number, _bCMS_state_machine.current_state(), getCurrentSession()));
     }
 
     /**
@@ -542,7 +554,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         _last_fire_truck_route = null;
         _last_fire_truck_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
         if (_last_fire_truck_route != null) {
-            create_event(_Route_for_fire_trucks);
+            _bcmsManager.createEvent(new Event(_Route_for_fire_trucks, _bCMS_state_machine.current_state(), getCurrentSession()));
+
             _bCMS_state_machine.run_to_completion(_Route_for_fire_trucks);
         } else {
             throw new Statechart_exception("Fire truck route " + route_name + " does not exist...");
@@ -552,37 +565,43 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void no_more_route_left() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_No_more_route_left);
-        create_event(_No_more_route_left);
+        _bcmsManager.createEvent(new Event(_No_more_route_left, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
     public void FSC_agrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_fire_truck_route);
-        create_event(_FSC_agrees_about_fire_truck_route);
+        _bcmsManager.createEvent(new Event(_FSC_agrees_about_fire_truck_route, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
     public void FSC_agrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_agrees_about_police_vehicle_route);
-        create_event(_FSC_agrees_about_police_vehicle_route);
+        _bcmsManager.createEvent(new Event(_FSC_agrees_about_police_vehicle_route, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
     public void FSC_disagrees_about_fire_truck_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_fire_truck_route);
-        create_event(_FSC_disagrees_about_fire_truck_route);
+        _bcmsManager.createEvent(new Event(_FSC_disagrees_about_fire_truck_route, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
     public void FSC_disagrees_about_police_vehicle_route() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_FSC_disagrees_about_police_vehicle_route);
-        create_event(_FSC_disagrees_about_police_vehicle_route);
+        _bcmsManager.createEvent(new Event(_FSC_disagrees_about_police_vehicle_route, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
     public void enough_fire_trucks_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_dispatched, AbstractStatechart_monitor.Compute_invariants);
-        create_event(_Enough_fire_trucks_dispatched);
+        _bcmsManager.createEvent(new Event(_Enough_fire_trucks_dispatched, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     /**
@@ -602,7 +621,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Fire_truck_dispatched);
 
             update_session_vehicle_status(fire_truck, "Dispatched");
-            create_event(_Fire_truck_dispatched);
+            _bcmsManager.createEvent(new Event(_Fire_truck_dispatched, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
@@ -612,7 +632,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void enough_fire_trucks_arrived() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_fire_trucks_arrived, AbstractStatechart_monitor.Compute_invariants);
-        create_event(_Enough_fire_trucks_arrived);
+        _bcmsManager.createEvent(new Event(_Enough_fire_trucks_arrived, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
@@ -626,7 +647,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Fire_truck_arrived);
 
             update_session_vehicle_status(fire_truck, "Arrived");
-            create_event(_Fire_truck_arrived);
+            _bcmsManager.createEvent(new Event(_Fire_truck_arrived, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
@@ -640,15 +662,13 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
      */
     @Override
     public void PSC_connection_request() throws Statechart_exception {
-        Event tmp = new Event();
-        tmp.setEventId(0);
-        tmp.setEventName(_PSC_connection_request);
-        tmp.setSessionId(_session);
-        if (!_occured_events.contains(tmp)) {
+        if (!_isPSCConnected) {
             System.out.println("PSC connecting..");
             _bCMS_state_machine.run_to_completion(_PSC_connection_request);
             createSession();
-            create_event(_PSC_connection_request);
+            _bcmsManager.createEvent(new Event(_PSC_connection_request, _bCMS_state_machine.current_state(), getCurrentSession()));
+            _isPSCConnected = true;
+
             List<PoliceVehicle> pvList = _entity_manager.createNamedQuery("PoliceVehicle.findAll").getResultList();
             for (PoliceVehicle pv : pvList) {
                 _bCMS_state_machine.run_to_completion(_Police_vehicle_dispatched);
@@ -660,7 +680,15 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
 
                 _entity_manager.persist(session_pv);
             }
+        }
+        // If both connected, we can initialize the number of vehicle requested
+        if (_bcmsManager == null) {
+            System.out.println("bcmsManager is NULL");
+        }
+        if (_isPSCConnected && _isFSCConnected) {
             state_police_vehicle_number(((Number) _entity_manager.createNamedQuery("PoliceVehicle.countAll").getSingleResult()).intValue());
+            state_fire_truck_number(((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue());
+
         }
     }
 
@@ -679,7 +707,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         _session.setPoliceTruckNumber(number_of_police_vehicle_required);
         _entity_manager.merge(_session);
 
-        create_event(_State_police_vehicle_number);
+        _bcmsManager.createEvent(new Event(_State_police_vehicle_number, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
@@ -688,7 +717,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
         _last_police_vehicle_route = _entity_manager.find(Route.class, route_name); // On construit un entity bean 'Route' avec sa clef 'route_name' ; on le cherche dans la base...
         if (_last_police_vehicle_route != null) {
             _bCMS_state_machine.run_to_completion(_Route_for_police_vehicles);
-            create_event(_Route_for_police_vehicles);
+            _bcmsManager.createEvent(new Event(_Route_for_police_vehicles, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Police vehicle route " + route_name + " does not exist...");
         }
@@ -697,7 +727,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void enough_police_vehicles_dispatched() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_police_vehicles_dispatched, AbstractStatechart_monitor.Compute_invariants);
-        create_event(_Enough_police_vehicles_dispatched);
+        _bcmsManager.createEvent(new Event(_Enough_police_vehicles_dispatched, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
@@ -713,7 +744,7 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Police_vehicle_dispatched);
 
             update_session_vehicle_status(police_vehicle, "Dispatched");
-            create_event(_Police_vehicle_dispatched);
+            _bcmsManager.createEvent(new Event(_Police_vehicle_dispatched, _bCMS_state_machine.current_state(), getCurrentSession()));
 
         } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
@@ -723,7 +754,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
     @Override
     public void enough_police_vehicles_arrived() throws Statechart_exception {
         _bCMS_state_machine.run_to_completion(_Enough_police_vehicles_arrived, AbstractStatechart_monitor.Compute_invariants);
-        create_event(_Enough_police_vehicles_arrived);
+        _bcmsManager.createEvent(new Event(_Enough_police_vehicles_arrived, _bCMS_state_machine.current_state(), getCurrentSession()));
+
     }
 
     @Override
@@ -737,7 +769,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Police_vehicle_arrived);
 
             update_session_vehicle_status(police_vehicle, "Arrived");
-            create_event(_Police_vehicle_arrived);
+            _bcmsManager.createEvent(new Event(_Police_vehicle_arrived, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
         }
@@ -774,7 +807,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Fire_truck_breakdown);
 
             update_session_vehicle_status(fire_truck, "Breakdown");
-            create_event(_Fire_truck_breakdown);
+            _bcmsManager.createEvent(new Event(_Fire_truck_breakdown, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         }
     }
 
@@ -788,7 +822,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Fire_truck_blocked);
 
             update_session_vehicle_status(fire_truck, "Blocked");
-            create_event(_Fire_truck_blocked);
+            _bcmsManager.createEvent(new Event(_Fire_truck_blocked, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Fire truck " + fire_truck_name + " does not exist...");
         }
@@ -814,7 +849,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Police_vehicle_breakdown);
 
             update_session_vehicle_status(police_vehicle, "Breakdown");
-            create_event(_Police_vehicle_breakdown);
+            _bcmsManager.createEvent(new Event(_Police_vehicle_breakdown, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         }
     }
 
@@ -827,7 +863,8 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             _bCMS_state_machine.run_to_completion(_Police_vehicle_blocked);
 
             update_session_vehicle_status(police_vehicle, "Blocked");
-            create_event(_Police_vehicle_blocked);
+            _bcmsManager.createEvent(new Event(_Police_vehicle_blocked, _bCMS_state_machine.current_state(), getCurrentSession()));
+
         } else {
             throw new Statechart_exception("Police vehicle " + police_vehicle_name + " does not exist...");
         }

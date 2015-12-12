@@ -5,6 +5,7 @@
  */
 package service.managers;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.Query;
@@ -21,6 +22,12 @@ public class BCMSManager implements BCMSManagerLocal {
 
     @javax.persistence.PersistenceContext(name = "CrisisPU")
     private javax.persistence.EntityManager _entity_manager;
+    
+    @Override
+    public void createEvent(Event e){
+        _entity_manager.persist(e);
+        System.out.println("BCMSManager.createEvent " + e.getEventName());
+    }
 
     @Override
     public List<Event> getEvents(BcmsSession session) {

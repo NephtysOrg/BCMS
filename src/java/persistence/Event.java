@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Event.findBySessionId", query = "SELECT e FROM Event e WHERE e.sessionId = :sessionId ORDER BY E.eventId, E.eventOccurrenceTime ASC"),
     @NamedQuery(name = "Event.findByExecutionTrace", query = "SELECT e FROM Event e WHERE e.executionTrace = :executionTrace")})
 public class Event implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +59,19 @@ public class Event implements Serializable {
     private BcmsSession sessionId;
 
     public Event() {
+    }
+
+    public Event(Integer eventId, String eventName, BcmsSession sessionId) {
+        this.eventId = eventId;
+        this.eventName = eventName;
+        this.sessionId = sessionId;
+    }
+
+    public Event(String eventName, String executionTrace, BcmsSession sessionId) {
+        this.eventOccurrenceTime = new Date();
+        this.eventName = eventName;
+        this.executionTrace = executionTrace;
+        this.sessionId = sessionId;
     }
 
     public Event(Integer eventId) {
@@ -118,12 +132,12 @@ public class Event implements Serializable {
             return false;
         }
         Event other = (Event) object;
-        System.out.println("Comparing "+ this.eventName +" and "+ other.getEventName());
         if (this.eventId == null && other.eventId != null) {
             System.out.println("False");
             return false;
         }
-        if ((this.eventId.equals(other.eventId) ) || ((this.eventName.equals(other.eventName)) && (this.sessionId.equals(other.sessionId)) )) {
+        System.out.println("Event ID : "+ this.eventId);
+        if ((this.eventId.equals(other.eventId)) || ((this.eventName.equals(other.eventName)) && (this.sessionId.equals(other.sessionId)))) {
             System.out.println("True");
             return true;
         }
@@ -135,5 +149,5 @@ public class Event implements Serializable {
     public String toString() {
         return "persistence.Event[ eventId=" + eventId + " ]";
     }
-    
+
 }

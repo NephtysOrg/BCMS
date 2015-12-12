@@ -25,7 +25,7 @@
                             </p:column>
                         </p:dataTable>
 
-                        <p:poll interval="2" update="@(.updatable_table)" />
+                        <p:poll interval="2" update="@(.updatable_table)" oncomplete="tooltip()"/>
                     </h:form>
                 </div>
             </div>
