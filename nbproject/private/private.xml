@@ -5,6 +5,8 @@
         <group>
             <file>file:/home/cfollet/Mega/M2/s1/composants_services/projet/Crisis/src/java/service/business/BCMS.java</file>
             <file>file:/home/cfollet/Mega/M2/s1/composants_services/projet/Crisis/src/java/persistence/Event.java</file>
+            <file>file:/home/cfollet/Mega/M2/s1/composants_services/projet/Crisis/src/java/service/managers/BCMSManager.java</file>
+            <file>file:/home/cfollet/Mega/M2/s1/composants_services/projet/Crisis/src/java/service/managers/BCMSManagerLocal.java</file>
         </group>
     </open-files>
 </project-private>

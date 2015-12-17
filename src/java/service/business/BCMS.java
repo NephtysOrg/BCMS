@@ -414,6 +414,12 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             Logger.getLogger(BCMS.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    private void create_routes(int number){
+        for (int i = 0; i < number; i++) {
+            _entity_manager.persist(new Route("Route" + (i+1)));
+        }
+    }
 
     private void create_vehicles(int number) {
         for (int i = 0; i < number; i++) {
@@ -440,22 +446,6 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             session_pv.setPoliceVehicleStatus(status);
             _entity_manager.merge(session_pv);
         }
-    }
-
-    /**
-     * Persist an event
-     *
-     * @param name event name
-     */
-    // todo move business into BCMSmanager
-    private void create_event(String name) {
-        Event event = new Event();
-        event.setEventName(name);
-        event.setEventOccurrenceTime(new Date());
-        event.setSessionId(_session);
-        event.setExecutionTrace(_bCMS_state_machine.current_state());
-        _entity_manager.persist(event);
-
     }
 
     @PreDestroy
@@ -1065,6 +1055,11 @@ public class BCMS extends Timer_monitor implements FireStationCoordinatorLocal, 
             int fire_truck_number = ((Number) _entity_manager.createNamedQuery("FireTruck.countAll").getSingleResult()).intValue();
             if (police_vehicle_number + fire_truck_number == 0) {
                 create_vehicles(vehicles_number);
+            }
+            
+            int route_number = ((Number) _entity_manager.createNamedQuery("Route.countAll").getSingleResult()).intValue();
+            if (route_number == 0) {
+                create_routes(5);
             }
         }
 

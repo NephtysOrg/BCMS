@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Route.findAll", query = "SELECT r FROM Route r"),
+    @NamedQuery(name = "Route.countAll", query = "SELECT count(r) FROM Route r"),
     @NamedQuery(name = "Route.findByRouteName", query = "SELECT r FROM Route r WHERE r.routeName = :routeName")})
 public class Route implements Serializable {
     private static final long serialVersionUID = 1L;
