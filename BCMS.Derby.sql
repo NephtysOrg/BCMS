@@ -1,13 +1,13 @@
 create table BCMS_session
 (
-session_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+session_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), -- Auto id
 fire_truck_number integer ,
 police_truck_number integer,
 constraint BCMS_session_key primary key(session_id)
 );
 
 create table Event(
-event_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+event_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), -- Auto id
 event_occurrence_time time,
 event_name varchar(50),
 execution_trace varchar(500),
@@ -28,7 +28,7 @@ route_name varchar(30),
 constraint Route_key primary key(route_name));
 
 create table BCMS_session_Fire_truck(
-BCMS_session_Fire_truck_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+BCMS_session_Fire_truck_id INT not null GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),  -- Auto id
 session_id INT,
 fire_truck_name varchar(30),
 fire_truck_status varchar(10) CONSTRAINT fire_truck_status_check CHECK (fire_truck_status IN ('Idle','Dispatched','Arrived','Blocked','Breakdown')),
